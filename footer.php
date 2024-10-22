@@ -10,10 +10,10 @@
                 </p>
                 <div class="flex space-x-4 mt-4">
                     <a href="https://www.instagram.com/hakhas_mistelbach/" target="_blank" rel="noopener noreferrer" class="text-white hover:text-gray-300">
-                        <?php include 'svg/instagram.svg'; ?>
+                        <svg width="20" height="20" class="mr-2"><?php include 'svg/instagram.svg'; ?></svg>
                     </a>
                     <a href="https://hakmistelbach.ac.at/" target="_blank" rel="noopener noreferrer" class="text-white hover:text-gray-300">
-                        <?php include 'svg/website.svg'; ?>
+                        <svg width="20" height="20" class="mr-2"><?php include 'svg/website.svg'; ?></svg>
                     </a>
                 </div>
             </div>
