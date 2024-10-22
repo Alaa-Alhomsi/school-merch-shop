@@ -166,7 +166,7 @@ foreach ($orders as $order) {
     
     <?php include 'footer.php'; ?>
     
-    <script src="js/script.js"></script>
+    <script type="module" src="js/script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             initializeAdmin();
