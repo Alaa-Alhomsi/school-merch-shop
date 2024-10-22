@@ -21,11 +21,11 @@
                 <h3 class="text-lg font-semibold mb-4">Created by</h3>
                 <div class="flex flex-col space-y-2">
                     <a href="https://github.com/Alaa-Alhomsi" target="_blank" rel="noopener noreferrer" class="text-white hover:text-gray-300 flex items-center">
-                        <?php include 'svg/github.svg'; ?>
+                        <svg width="20" height="20" class="mr-2"><?php include 'svg/github.svg'; ?></svg>
                         Alaa-Alhomsi
                     </a>
                     <a href="https://github.com/PaulSchoefmann" target="_blank" rel="noopener noreferrer" class="text-white hover:text-gray-300 flex items-center">
-                        <?php include 'svg/github.svg'; ?>
+                        <svg width="20" height="20" class="mr-2"><?php include 'svg/github.svg'; ?></svg>
                         PaulSchoefmann
                     </a>
                 </div>
