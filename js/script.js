@@ -1,7 +1,5 @@
-import axios from 'axios';
-
 // Funktionen aus shop.js
-function addToCart(productId, allowsSizes = false) {
+window.addToCart = function(productId, allowsSizes = false) {
     console.log("addToCart wurde aufgerufen. allows sizes: " + allowsSizes);
     const quantity = document.getElementById('quantity').value;
     const formData = new FormData();
@@ -12,7 +10,7 @@ function addToCart(productId, allowsSizes = false) {
 
     if (allowsSizes) {
         const sizeSelect = document.getElementById('size');
-        console.log("sizeSelect: "+sizeSelect.value);
+        console.log("sizeSelect: " + sizeSelect.value);
         if (sizeSelect && sizeSelect.value) {
             console.log("sizes are allowed");
             sizeName = sizeSelect.value;
@@ -45,16 +43,12 @@ function addToCart(productId, allowsSizes = false) {
         .catch(function (error) {
             console.error('Axios Error:', error);
             if (error.response) {
-                // Der Request wurde gemacht und der Server antwortete mit einem Status Code
-                // der außerhalb des Bereichs von 2xx liegt
                 console.log("Fehler-Daten:", error.response.data);
                 console.log("Fehler-Status:", error.response.status);
                 console.log("Fehler-Header:", error.response.headers);
             } else if (error.request) {
-                // Der Request wurde gemacht, aber keine Antwort erhalten
                 console.log("Fehler-Request:", error.request);
             } else {
-                // Etwas anderes ist beim Aufsetzen des Requests schief gegangen
                 console.log('Error', error.message);
             }
             showNotification('Fehler beim Hinzufügen zum Warenkorb', 'error');
