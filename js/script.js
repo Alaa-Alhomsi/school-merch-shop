@@ -241,7 +241,7 @@ function initializeIndex() {
 // Neue Funktionen für die Admin-Seite
 let groupedData = {}
 
-// Stelle sicher, dass die Funktion global ist
+// for plesk
 window.initializeAdmin = function() {
     fetchAdminData();
     document.getElementById('grouping').addEventListener('change', updateResults);
