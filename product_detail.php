@@ -35,6 +35,7 @@ if ($product['allows_sizes']) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produktdetails</title>
     <link href="/css/output.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <link rel="stylesheet" href="css/footerConf.css">
 </head>
 <body class="font-sans">

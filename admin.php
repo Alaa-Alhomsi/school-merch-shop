@@ -109,6 +109,7 @@ foreach ($orders as $order) {
     <link href="/css/output.css" rel="stylesheet">
     <link rel="stylesheet" href="css/footerConf.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body class="flex flex-col min-h-screen bg-gray-100">
     <?php include 'navbar.php'; ?>
