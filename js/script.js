@@ -241,7 +241,8 @@ function initializeIndex() {
 // Neue Funktionen für die Admin-Seite
 let groupedData = {}
 
-function initializeAdmin() {
+// Stelle sicher, dass die Funktion global ist
+window.initializeAdmin = function() {
     fetchAdminData();
     document.getElementById('grouping').addEventListener('change', updateResults);
     document.getElementById('search').addEventListener('input', updateResults);
