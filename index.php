@@ -127,5 +127,6 @@ if ($showWelcome) {
     <script>
         gsap.registerPlugin(
     </script>
+    <script type="module" src="js/script.js"></script>
 </body>
 </html>

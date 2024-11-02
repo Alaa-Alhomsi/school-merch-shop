@@ -29,13 +29,12 @@ if ($product['allows_sizes']) {
 ?>
 
 <!DOCTYPE html>
-<html lang="de" class="bg-gray-100">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produktdetails</title>
     <link href="/css/output.css" rel="stylesheet">
-    <script src="js/script.js" defer></script>
     <link rel="stylesheet" href="css/footerConf.css">
 </head>
 <body class="font-sans">
@@ -77,5 +76,6 @@ if ($product['allows_sizes']) {
 
     </main>
     <?php include 'footer.php'; ?>
+    <script type="module" src="js/script.js" ></script>
 </body>
 </html>

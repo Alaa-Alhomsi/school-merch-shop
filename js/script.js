@@ -162,10 +162,6 @@ function updateCartCountDisplay(count) {
     }
 }
 
-function updateCartCount(count) {
-    updateCartCountDisplay(count);
-}
-
 function initializeNavbar() {
     document.addEventListener('DOMContentLoaded', function() {
         axios.get('get_cart_count.php')
