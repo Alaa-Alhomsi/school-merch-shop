@@ -70,11 +70,7 @@ function showNotification(message, type = 'success') {
 }
 
 // Funktionen aus cart.js
-document.addEventListener('DOMContentLoaded', function() {
-    initializeCart();
-});
-
-function initializeCart() {
+window.initializeCart = function() {
     const cartItems = document.querySelectorAll('li[data-product-id]');
     
     cartItems.forEach(item => {
