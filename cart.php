@@ -58,7 +58,7 @@ $_SESSION['cart'] = $cart;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warenkorb</title>
     <link href="/css/output.css" rel="stylesheet">
-    <script src="js/script.js" defer></script>
+    <script type="module" src="js/script.js" defer></script>
 </head>
 <body class="h-full flex flex-col">
     <?php include 'navbar.php'; ?>

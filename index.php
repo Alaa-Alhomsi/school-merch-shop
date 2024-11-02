@@ -125,7 +125,7 @@ if ($showWelcome) {
     <?php include 'footer.php'; ?>
 
     <script>
-        gsap.registerPlugin(
+        gsap.registerPlugin(ScrollTrigger)
     </script>
     <script type="module" src="js/script.js"></script>
 </body>

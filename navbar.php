@@ -35,7 +35,7 @@ $cartItemCount = getCartItemCount();
     <title>Navbar</title>
     <link href="/css/output.css" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="js/script.js" defer></script>
+    <script type="module" src="js/script.js" defer></script>
     <style>
 
         .cart-count {
