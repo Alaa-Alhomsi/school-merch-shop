@@ -237,10 +237,14 @@ let groupedData = {}
 
 window.initializeAdmin = function() {
     fetchAdminData();
-    document.getElementById('grouping').addEventListener('change', updateResults);
-    document.getElementById('search').addEventListener('input', updateResults);
-    document.getElementById('statusFilter').addEventListener('change', updateResults);
-    document.getElementById('downloadExcel').addEventListener('click', downloadExcel);
+    
+    // Event Listener für Filter und Gruppierung
+    document.getElementById('grouping')?.addEventListener('change', updateResults);
+    document.getElementById('search')?.addEventListener('input', updateResults);
+    document.getElementById('statusFilter')?.addEventListener('change', updateResults);
+    document.getElementById('downloadExcel')?.addEventListener('click', downloadExcel);
+    
+    // Initialisiere das Status-Modal
     initializeStatusModal();
 }
 
@@ -248,14 +252,6 @@ function fetchAdminData() {
     axios.get('admin_panel_grouping.php')
         .then(response => {
             groupedData = response.data;
-            const statusFilter = document.getElementById('statusFilter');
-            if (statusFilter) {
-                const newStatusOption = Array.from(statusFilter.options)
-                    .find(option => option.text === 'Neu');
-                if (newStatusOption) {
-                    statusFilter.value = newStatusOption.value;
-                }
-            }
             updateResults();
         })
         .catch(error => {
@@ -270,13 +266,6 @@ function updateResults() {
     const resultsContainer = document.getElementById('results');
     let html = '';
 
-    const classSelectContainer = document.getElementById('classSelectContainer');
-    if (grouping === 'class') {
-        classSelectContainer.style.display = 'block';
-    } else {
-        classSelectContainer.style.display = 'none';
-    }
-
     switch (grouping) {
         case 'user':
             html = generateUserHTML(search);
@@ -289,8 +278,9 @@ function updateResults() {
             break;
     }
 
-    resultsContainer.innerHTML = html;
-    updateChart(grouping);
+    if (resultsContainer) {
+        resultsContainer.innerHTML = html;
+    }
 }
 
 function generateUserHTML(search) {
