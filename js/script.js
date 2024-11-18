@@ -306,7 +306,7 @@ function generateUserHTML(search) {
             const filteredOrders = userData.orders.filter(order => 
                 !statusFilter || order.status_id.toString() === statusFilter
             );
-            
+
             if (filteredOrders.length > 0) {
                 html += `<tr>
                     <td class="px-6 py-4">${userData.email}</td>
@@ -315,7 +315,7 @@ function generateUserHTML(search) {
                         <div class="space-y-2">
                             ${filteredOrders.map(order => `
                                 <div class="flex items-center gap-2">
-                                    <span>Bestellung #${order.order_id}</span>
+                                    <span>Bestellung #${order.order_id} (${new Date(order.date).toLocaleDateString()})</span>
                                     <button 
                                         onclick="changeStatus(${order.order_id})"
                                         data-order-id="${order.order_id}"
