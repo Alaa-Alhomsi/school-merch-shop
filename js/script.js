@@ -246,51 +246,50 @@ window.initializeAdmin = function() {
     fetchAdminData();
     document.getElementById('grouping').addEventListener('change', updateResults);
     document.getElementById('search').addEventListener('input', updateResults);
+    document.getElementById('statusFilter').addEventListener('change', updateResults);
     document.getElementById('downloadExcel').addEventListener('click', downloadExcel);
     initializeStatusModal();
 }
 
 function fetchAdminData() {
     axios.get('admin_panel_grouping.php')
-        .then(function (response) {
+        .then(response => {
             groupedData = response.data;
             updateResults();
+            // Nach dem Laden der Daten den Standard-Status-Filter anwenden
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                updateResults();
+            }
         })
-        .catch(function (error) {
-            console.error('Error fetching admin data:', error);
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            alert('Fehler beim Laden der Daten');
         });
 }
 
 function updateResults() {
     const grouping = document.getElementById('grouping').value;
     const search = document.getElementById('search').value.toLowerCase();
-    const resultsContainer = document.getElementById('results');
+    const statusFilter = document.getElementById('statusFilter').value;
+    const results = document.getElementById('results');
+    
     let html = '';
-
-    const classSelectContainer = document.getElementById('classSelectContainer');
-    if (grouping === 'class') {
-        classSelectContainer.style.display = 'block';
-    } else {
-        classSelectContainer.style.display = 'none';
-    }
-
-    switch (grouping) {
+    switch(grouping) {
         case 'user':
-            html = generateUserHTML(search);
+            html = generateUserHTML(search, statusFilter);
             break;
         case 'product':
-            html = generateProductHTML(search);
+            html = generateProductHTML(search, statusFilter);
             break;
         case 'class':
-            html = generateClassHTML(search);
+            html = generateClassHTML(search, statusFilter);
             break;
     }
-
-    resultsContainer.innerHTML = html;
-    updateChart(grouping);
+    results.innerHTML = html;
 }
 
-function generateUserHTML(search) {
+function generateUserHTML(search, statusFilter) {
     let html = '<div class="overflow-x-auto">';
     html += '<table class="min-w-full divide-y divide-gray-200">';
     html += '<thead class="bg-gray-50"><tr>';
@@ -301,28 +300,35 @@ function generateUserHTML(search) {
     html += '</tr></thead><tbody class="bg-white divide-y divide-gray-200">';
 
     for (const [userId, userData] of Object.entries(groupedData.groupedByUser)) {
-        if (userData.email.toLowerCase().includes(search.toLowerCase())) {
-            html += `<tr>
-                <td class="px-6 py-4">${userData.email}</td>
-                <td class="px-6 py-4">${userData.class_name}</td>
-                <td class="px-6 py-4">
-                    <div class="space-y-2">
-                        ${userData.orders.map(order => `
-                            <div class="flex items-center gap-2">
-                                <span>Bestellung #${order.order_id}</span>
-                                <button 
-                                    onclick="changeStatus(${order.order_id})"
-                                    data-order-id="${order.order_id}"
-                                    class="px-3 py-1 rounded text-white text-sm"
-                                    style="background-color: ${order.status_color}">
-                                    ${order.status_name}
-                                </button>
-                            </div>
-                        `).join('')}
-                    </div>
-                </td>
-                <td class="px-6 py-4">€${userData.total_spent.toFixed(2)}</td>
-            </tr>`;
+        if (userData.email.toLowerCase().includes(search)) {
+            // Filter orders based on status
+            const filteredOrders = userData.orders.filter(order => 
+                !statusFilter || order.status_id.toString() === statusFilter
+            );
+
+            if (filteredOrders.length > 0) {
+                html += `<tr>
+                    <td class="px-6 py-4">${userData.email}</td>
+                    <td class="px-6 py-4">${userData.class_name}</td>
+                    <td class="px-6 py-4">
+                        <div class="space-y-2">
+                            ${filteredOrders.map(order => `
+                                <div class="flex items-center gap-2">
+                                    <span>Bestellung #${order.order_id} (${new Date(order.date).toLocaleDateString()})</span>
+                                    <button 
+                                        onclick="changeStatus(${order.order_id})"
+                                        data-order-id="${order.order_id}"
+                                        class="px-3 py-1 rounded text-white text-sm"
+                                        style="background-color: ${order.status_color}">
+                                        ${order.status_name}
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">€${userData.total_spent.toFixed(2)}</td>
+                </tr>`;
+            }
         }
     }
 
@@ -330,7 +336,7 @@ function generateUserHTML(search) {
     return html;
 }
 
-function generateProductHTML(search) {
+function generateProductHTML(search, statusFilter) {
     let html = '<div class="overflow-hidden">';
     html += '<table class="min-w-full divide-y divide-gray-200">';
     html += '<thead class="bg-gray-50"><tr>';
@@ -368,7 +374,7 @@ function generateProductHTML(search) {
     return html;
 }
 
-function generateClassHTML(search) {
+function generateClassHTML(search, statusFilter) {
     let html = '<div class="overflow-hidden">';
     html += '<table class="min-w-full divide-y divide-gray-200">';
     html += '<thead class="bg-gray-50"><tr>';

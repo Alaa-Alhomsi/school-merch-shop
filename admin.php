@@ -7,6 +7,11 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
 
 require_once 'db.php';
 
+// Status aus der Datenbank abrufen
+$statusQuery = "SELECT * FROM order_status ORDER BY id";
+$statusStmt = $pdo->query($statusQuery);
+$orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
+
 // Bestellungen mit Details abrufen
 $query = "SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price, o.status_id,
                  u.email, u.class_name, 
@@ -100,11 +105,6 @@ foreach ($orders as $order) {
     }
     $groupedByClass[$order['class_name']]['products'][$order['product_id']]['quantity'] += $order['quantity'];
 }
-
-// Status-Dropdown zum Filtern hinzufügen
-$statusQuery = "SELECT * FROM order_status ORDER BY id";
-$statusStmt = $pdo->query($statusQuery);
-$orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -159,6 +159,18 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
                     echo "<option value=\"$class\">$displayClass</option>";
                 }
                 ?>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-2">Nach Status filtern:</label>
+            <select id="statusFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                <option value="">Alle Status</option>
+                <?php foreach ($orderStatuses as $status): ?>
+                    <option value="<?= $status['id'] ?>" <?= $status['name'] === 'Neu' ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($status['name']) ?>
+                    </option>
+                <?php endforeach; ?>
             </select>
         </div>
 
