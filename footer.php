@@ -34,10 +34,6 @@
                 <h3 class="text-lg font-semibold mb-4">Links</h3>
                 <ul class="space-y-2">
                     <li><a href="./impressum.php" class="text-white hover:text-gray-300">Impressum</a></li>
-                    <li><a href="https://github.com/Alaa-Alhomsi/school-merch-shop" target="_blank" rel="noopener noreferrer" class="text-white hover:text-gray-300 flex items-center">
-                        <svg width="20" height="20" class="mr-2"><?php include 'svg/github.svg'; ?></svg>
-                        GitHub Repository
-                    </a></li>
                     <li><p class="text-sm">© <?php echo date("Y"); ?> BHAK & BHAS Mistelbach</p></li>
                 </ul>
             </div>
