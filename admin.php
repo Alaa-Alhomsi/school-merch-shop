@@ -128,7 +128,7 @@ foreach ($orders as $order) {
             <div>
                 <label for="grouping" class="block text-sm font-medium text-gray-700 mb-2">Gruppierung:</label>
                 <select id="grouping" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                    <option value="user">Nach Benutzer</option>
+                    <option value="user" selected>Nach Benutzer</option>
                     <option value="product">Nach Produkt</option>
                     <option value="class">Nach Klasse</option>
                 </select>
@@ -173,6 +173,17 @@ foreach ($orders as $order) {
                 <?php endforeach; ?>
             </select>
         </div>
+
+        <?php
+        $defaultStatusId = '';
+        foreach ($orderStatuses as $status) {
+            if ($status['name'] === 'Neu') {
+                $defaultStatusId = $status['id'];
+                break;
+            }
+        }
+        ?>
+        <input type="hidden" id="defaultStatusId" value="<?= $defaultStatusId ?>">
 
         <div id="results" class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
             <!-- Ergebnisse werden hier dynamisch eingefügt -->

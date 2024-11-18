@@ -1,4 +1,3 @@
-// Funktionen aus shop.js
 window.addToCart = function(productId, allowsSizes = false) {
     console.log("addToCart wurde aufgerufen. allows sizes: " + allowsSizes);
     const quantity = document.getElementById('quantity').value;
@@ -31,7 +30,7 @@ window.addToCart = function(productId, allowsSizes = false) {
         .then(function (response) {
             console.log("Vollständige Serverantwort:", response);
             if (response.data && response.data.success) {
-                showNotification('Produkt wurde zum Warenkorb hinzugefügt');
+                showNotification('Produkt wurde zum Warenkorb hinzugefgt');
                 if (response.data.cartCount !== undefined) {
                     updateCartCount(response.data.cartCount);
                 }
@@ -69,7 +68,6 @@ function showNotification(message, type = 'success') {
     }
 }
 
-// Funktionen aus cart.js
 window.initializeCart = function() {
     const cartItems = document.querySelectorAll('li[data-product-id]');
     
@@ -143,7 +141,6 @@ function updateCartCount(count) {
     }
 }
 
-// Funktionen aus navbar.php
 function updateCartCountDisplay(count) {
     const cartCountElement = document.querySelector('.cart-count');
     if (cartCountElement) {
@@ -166,13 +163,11 @@ function initializeNavbar() {
     });
 }
 
-// Funktionen aus product_detail.php
 function addToCartWithQuantity(productId) {
     const quantity = document.getElementById('quantity').value;
     addToCart(productId, quantity);
 }
 
-// Funktionen aus index.php
 function initializeIndex() {
     gsap.registerPlugin(ScrollTrigger);
 
@@ -238,29 +233,27 @@ function initializeIndex() {
     });
 }
 
-// Neue Funktionen für die Admin-Seite
 let groupedData = {}
 
-// for plesk
 window.initializeAdmin = function() {
     fetchAdminData();
     document.getElementById('grouping').addEventListener('change', updateResults);
     document.getElementById('search').addEventListener('input', updateResults);
-    document.getElementById('statusFilter').addEventListener('change', updateResults);
     document.getElementById('downloadExcel').addEventListener('click', downloadExcel);
     initializeStatusModal();
 }
 
 function fetchAdminData() {
+    const defaultStatusId = document.getElementById('defaultStatusId').value;
+    
     axios.get('admin_panel_grouping.php')
         .then(response => {
             groupedData = response.data;
-            updateResults();
-            // Nach dem Laden der Daten den Standard-Status-Filter anwenden
             const statusFilter = document.getElementById('statusFilter');
-            if (statusFilter) {
-                updateResults();
+            if (statusFilter && defaultStatusId) {
+                statusFilter.value = defaultStatusId;
             }
+            updateResults();
         })
         .catch(error => {
             console.error('Error fetching data:', error);
@@ -271,25 +264,34 @@ function fetchAdminData() {
 function updateResults() {
     const grouping = document.getElementById('grouping').value;
     const search = document.getElementById('search').value.toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value;
-    const results = document.getElementById('results');
-    
+    const resultsContainer = document.getElementById('results');
     let html = '';
-    switch(grouping) {
+
+    const classSelectContainer = document.getElementById('classSelectContainer');
+    if (grouping === 'class') {
+        classSelectContainer.style.display = 'block';
+    } else {
+        classSelectContainer.style.display = 'none';
+    }
+
+    switch (grouping) {
         case 'user':
-            html = generateUserHTML(search, statusFilter);
+            html = generateUserHTML(search);
             break;
         case 'product':
-            html = generateProductHTML(search, statusFilter);
+            html = generateProductHTML(search);
             break;
         case 'class':
-            html = generateClassHTML(search, statusFilter);
+            html = generateClassHTML(search);
             break;
     }
-    results.innerHTML = html;
+
+    resultsContainer.innerHTML = html;
+    updateChart(grouping);
 }
 
-function generateUserHTML(search, statusFilter) {
+function generateUserHTML(search) {
+    const statusFilter = document.getElementById('statusFilter').value;
     let html = '<div class="overflow-x-auto">';
     html += '<table class="min-w-full divide-y divide-gray-200">';
     html += '<thead class="bg-gray-50"><tr>';
@@ -300,12 +302,11 @@ function generateUserHTML(search, statusFilter) {
     html += '</tr></thead><tbody class="bg-white divide-y divide-gray-200">';
 
     for (const [userId, userData] of Object.entries(groupedData.groupedByUser)) {
-        if (userData.email.toLowerCase().includes(search)) {
-            // Filter orders based on status
+        if (userData.email.toLowerCase().includes(search.toLowerCase())) {
             const filteredOrders = userData.orders.filter(order => 
                 !statusFilter || order.status_id.toString() === statusFilter
             );
-
+            
             if (filteredOrders.length > 0) {
                 html += `<tr>
                     <td class="px-6 py-4">${userData.email}</td>
@@ -314,7 +315,7 @@ function generateUserHTML(search, statusFilter) {
                         <div class="space-y-2">
                             ${filteredOrders.map(order => `
                                 <div class="flex items-center gap-2">
-                                    <span>Bestellung #${order.order_id} (${new Date(order.date).toLocaleDateString()})</span>
+                                    <span>Bestellung #${order.order_id}</span>
                                     <button 
                                         onclick="changeStatus(${order.order_id})"
                                         data-order-id="${order.order_id}"
@@ -336,7 +337,7 @@ function generateUserHTML(search, statusFilter) {
     return html;
 }
 
-function generateProductHTML(search, statusFilter) {
+function generateProductHTML(search) {
     let html = '<div class="overflow-hidden">';
     html += '<table class="min-w-full divide-y divide-gray-200">';
     html += '<thead class="bg-gray-50"><tr>';
@@ -374,7 +375,7 @@ function generateProductHTML(search, statusFilter) {
     return html;
 }
 
-function generateClassHTML(search, statusFilter) {
+function generateClassHTML(search) {
     let html = '<div class="overflow-hidden">';
     html += '<table class="min-w-full divide-y divide-gray-200">';
     html += '<thead class="bg-gray-50"><tr>';
@@ -452,7 +453,6 @@ function updateChart(grouping) {
     });
 }
 
-// Fügen Sie diese Funktion hinzu
 function downloadExcel() {
     const grouping = document.getElementById('grouping').value;
     const data = groupedData['groupedBy' + grouping.charAt(0).toUpperCase() + grouping.slice(1)];
@@ -480,7 +480,6 @@ function downloadExcel() {
     });
 }
 
-// Event Listener für DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
     if (document.querySelector('li[data-product-id]')) {
         initializeCart();

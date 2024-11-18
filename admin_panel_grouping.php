@@ -9,14 +9,16 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
 require_once 'db.php';
 
 // Bestellungen mit Details abrufen
-$query = "SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price, 
+$query = "SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price, o.status_id,
                  u.email, u.class_name, 
                  oi.product_id, oi.quantity, oi.size_name,
-                 p.name AS product_name, p.price AS product_price
+                 p.name AS product_name, p.price AS product_price,
+                 os.name AS status_name, os.color AS status_color
           FROM orders o
           JOIN users u ON o.user_id = u.id
           JOIN order_items oi ON o.id = oi.order_id
           JOIN products p ON oi.product_id = p.id
+          JOIN order_status os ON o.status_id = os.id
           ORDER BY o.created_at DESC";
 $stmt = $pdo->query($query);
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -36,7 +38,8 @@ foreach ($orders as $order) {
             'email' => $order['email'],
             'class_name' => $class_name,
             'total_spent' => 0,
-            'products' => []
+            'products' => [],
+            'orders' => []
         ];
     }
     $groupedByUser[$order['user_id']]['total_spent'] += $order['product_price'] * $order['quantity'];
@@ -53,6 +56,15 @@ foreach ($orders as $order) {
         'order_id' => $order['order_id'],
         'date' => $order['created_at'],
         'quantity' => $order['quantity']
+    ];
+
+    // Bestellung mit Status hinzufügen
+    $groupedByUser[$order['user_id']]['orders'][] = [
+        'order_id' => $order['order_id'],
+        'date' => $order['created_at'],
+        'status_id' => $order['status_id'],
+        'status_name' => $order['status_name'],
+        'status_color' => $order['status_color']
     ];
 
     // Nach Produkt gruppieren
