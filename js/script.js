@@ -239,19 +239,22 @@ window.initializeAdmin = function() {
     fetchAdminData();
     document.getElementById('grouping').addEventListener('change', updateResults);
     document.getElementById('search').addEventListener('input', updateResults);
+    document.getElementById('statusFilter').addEventListener('change', updateResults);
     document.getElementById('downloadExcel').addEventListener('click', downloadExcel);
     initializeStatusModal();
 }
 
 function fetchAdminData() {
-    const defaultStatusId = document.getElementById('defaultStatusId').value;
-    
     axios.get('admin_panel_grouping.php')
         .then(response => {
             groupedData = response.data;
             const statusFilter = document.getElementById('statusFilter');
-            if (statusFilter && defaultStatusId) {
-                statusFilter.value = defaultStatusId;
+            if (statusFilter) {
+                const newStatusOption = Array.from(statusFilter.options)
+                    .find(option => option.text === 'Neu');
+                if (newStatusOption) {
+                    statusFilter.value = newStatusOption.value;
+                }
             }
             updateResults();
         })
