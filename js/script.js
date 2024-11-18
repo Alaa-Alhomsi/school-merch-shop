@@ -247,6 +247,7 @@ window.initializeAdmin = function() {
     document.getElementById('grouping').addEventListener('change', updateResults);
     document.getElementById('search').addEventListener('input', updateResults);
     document.getElementById('downloadExcel').addEventListener('click', downloadExcel);
+    initializeStatusModal();
 }
 
 function fetchAdminData() {
@@ -290,46 +291,37 @@ function updateResults() {
 }
 
 function generateUserHTML(search) {
-    let html = '<div class="overflow-hidden">';
+    let html = '<div class="overflow-x-auto">';
     html += '<table class="min-w-full divide-y divide-gray-200">';
     html += '<thead class="bg-gray-50"><tr>';
     html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Benutzer</th>';
     html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Klasse</th>';
-    html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>';
+    html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bestellungen & Status</th>';
     html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gesamtausgaben</th>';
-    html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produkte</th>';
     html += '</tr></thead><tbody class="bg-white divide-y divide-gray-200">';
 
-    const statusFilter = document.getElementById('statusFilter').value;
-
     for (const [userId, userData] of Object.entries(groupedData.groupedByUser)) {
-        if (userData.email.toLowerCase().includes(search.toLowerCase()) &&
-            (!statusFilter || userData.status_id == statusFilter)) {
+        if (userData.email.toLowerCase().includes(search.toLowerCase())) {
             html += `<tr>
-                <td class="px-6 py-4 whitespace-nowrap">${userData.email}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${userData.class_name}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <button onclick="changeStatus(${userData.order_id})" 
-                            class="px-2 py-1 rounded text-white"
-                            style="background-color: ${userData.status_color}">
-                        ${userData.status_name}
-                    </button>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">€${userData.total_spent.toFixed(2)}</td>
+                <td class="px-6 py-4">${userData.email}</td>
+                <td class="px-6 py-4">${userData.class_name}</td>
                 <td class="px-6 py-4">
-                    <ul class="list-disc list-inside">
-                        ${Object.entries(userData.products).map(([productKey, product]) => `
-                            <li>
-                                ${product.name} (Größe: ${product.size}) - ${product.quantity}x
-                                <ul class="list-circle list-inside ml-4">
-                                    ${product.orders.map(order => `
-                                        <li>Bestellung #${order.order_id} am ${new Date(order.date).toLocaleDateString()} - ${order.quantity}x</li>
-                                    `).join('')}
-                                </ul>
-                            </li>
+                    <div class="space-y-2">
+                        ${userData.orders.map(order => `
+                            <div class="flex items-center gap-2">
+                                <span>Bestellung #${order.order_id}</span>
+                                <button 
+                                    onclick="changeStatus(${order.order_id})"
+                                    data-order-id="${order.order_id}"
+                                    class="px-3 py-1 rounded text-white text-sm"
+                                    style="background-color: ${order.status_color}">
+                                    ${order.status_name}
+                                </button>
+                            </div>
                         `).join('')}
-                    </ul>
+                    </div>
                 </td>
+                <td class="px-6 py-4">€${userData.total_spent.toFixed(2)}</td>
             </tr>`;
         }
     }
@@ -413,7 +405,6 @@ function generateClassHTML(search) {
     html += '</tbody></table></div>';
     return html;
 }
-
 function updateChart(grouping) {
     const ctx = document.getElementById('orderChart').getContext('2d');
     let data, labels;
@@ -483,44 +474,6 @@ function downloadExcel() {
     });
 }
 
-function changeStatus(orderId) {
-    const modal = document.getElementById('statusModal');
-    const newStatus = document.getElementById('newStatus');
-    const confirmBtn = document.getElementById('confirmStatusChange');
-    const cancelBtn = document.getElementById('cancelStatusChange');
-
-    modal.classList.remove('hidden');
-    
-    confirmBtn.onclick = () => {
-        updateOrderStatus(orderId, newStatus.value);
-        modal.classList.add('hidden');
-    };
-    
-    cancelBtn.onclick = () => {
-        modal.classList.add('hidden');
-    };
-}
-
-function updateOrderStatus(orderId, statusId) {
-    const formData = new FormData();
-    formData.append('orderId', orderId);
-    formData.append('statusId', statusId);
-
-    axios.post('update_order_status.php', formData)
-        .then(response => {
-            if (response.data.success) {
-                fetchAdminData(); // Daten neu laden
-            }
-        })
-        .catch(error => {
-            console.error('Error updating status:', error);
-            alert('Fehler beim Aktualisieren des Status');
-        });
-}
-
-// Event Listener für Status-Filter
-document.getElementById('statusFilter').addEventListener('change', updateResults);
-
 // Event Listener für DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {
     if (document.querySelector('li[data-product-id]')) {
@@ -532,3 +485,60 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     initializeNavbar();
 });
+
+let currentOrderId = null;
+
+function changeStatus(orderId) {
+    currentOrderId = orderId;
+    const modal = document.getElementById('statusModal');
+    modal.classList.remove('hidden');
+}
+
+function initializeStatusModal() {
+    const modal = document.getElementById('statusModal');
+    const cancelBtn = document.getElementById('cancelStatusChange');
+    const confirmBtn = document.getElementById('confirmStatusChange');
+
+    cancelBtn.onclick = () => {
+        modal.classList.add('hidden');
+        currentOrderId = null;
+    };
+
+    confirmBtn.onclick = () => {
+        const newStatus = document.getElementById('newStatus');
+        if (currentOrderId) {
+            updateOrderStatus(currentOrderId, newStatus.value);
+        }
+        modal.classList.add('hidden');
+    };
+
+    // Schließen bei Klick außerhalb des Modals
+    window.onclick = (event) => {
+        if (event.target === modal) {
+            modal.classList.add('hidden');
+            currentOrderId = null;
+        }
+    };
+}
+
+function updateOrderStatus(orderId, statusId) {
+    const formData = new FormData();
+    formData.append('orderId', orderId);
+    formData.append('statusId', statusId);
+
+    axios.post('update_order_status.php', formData)
+        .then(response => {
+            if (response.data.success) {
+                // Aktualisiere die Ansicht
+                const statusButton = document.querySelector(`[data-order-id="${orderId}"]`);
+                if (statusButton) {
+                    statusButton.textContent = response.data.newStatus.name;
+                    statusButton.style.backgroundColor = response.data.newStatus.color;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error updating status:', error);
+            alert('Fehler beim Aktualisieren des Status');
+        });
+}

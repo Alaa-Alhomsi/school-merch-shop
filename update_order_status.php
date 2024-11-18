@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("UPDATE orders SET status_id = ? WHERE id = ?");
             $stmt->execute([$statusId, $orderId]);
             
-            $stmt = $pdo->prepare("SELECT os.name, os.color FROM order_status os WHERE os.id = ?");
+            $stmt = $pdo->prepare("SELECT name, color FROM order_status WHERE id = ?");
             $stmt->execute([$statusId]);
             $newStatus = $stmt->fetch(PDO::FETCH_ASSOC);
             

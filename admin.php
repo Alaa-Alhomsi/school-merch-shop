@@ -162,18 +162,25 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
             </select>
         </div>
 
-        <div>
-            <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-2">Status:</label>
-            <select id="statusFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                <option value="">Alle Status</option>
-                <?php foreach ($orderStatuses as $status): ?>
-                    <option value="<?= $status['id'] ?>"><?= htmlspecialchars($status['name']) ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-
         <div id="results" class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
             <!-- Ergebnisse werden hier dynamisch eingefügt -->
+        </div>
+
+        <div id="statusModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <h3 class="text-lg font-medium mb-4">Status ändern</h3>
+                <select id="newStatus" class="w-full mb-4 px-3 py-2 border rounded-md">
+                    <?php foreach ($orderStatuses as $status): ?>
+                        <option value="<?= $status['id'] ?>" data-color="<?= $status['color'] ?>">
+                            <?= htmlspecialchars($status['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <div class="flex justify-end space-x-2">
+                    <button id="cancelStatusChange" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Abbrechen</button>
+                    <button id="confirmStatusChange" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Speichern</button>
+                </div>
+            </div>
         </div>
 
         <div class="bg-white shadow overflow-hidden sm:rounded-lg p-6">
@@ -190,21 +197,5 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
             initializeAdmin();
         });
     </script>
-
-    <!-- Status-Änderung-Modal -->
-    <div id="statusModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 class="text-lg font-medium mb-4">Status ändern</h3>
-            <select id="newStatus" class="w-full mb-4">
-                <?php foreach ($orderStatuses as $status): ?>
-                    <option value="<?= $status['id'] ?>"><?= htmlspecialchars($status['name']) ?></option>
-                <?php endforeach; ?>
-            </select>
-            <div class="flex justify-end space-x-2">
-                <button id="cancelStatusChange" class="px-4 py-2 bg-gray-200 rounded">Abbrechen</button>
-                <button id="confirmStatusChange" class="px-4 py-2 bg-blue-500 text-white rounded">Speichern</button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
