@@ -295,15 +295,26 @@ function generateUserHTML(search) {
     html += '<thead class="bg-gray-50"><tr>';
     html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Benutzer</th>';
     html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Klasse</th>';
+    html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>';
     html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gesamtausgaben</th>';
     html += '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produkte</th>';
     html += '</tr></thead><tbody class="bg-white divide-y divide-gray-200">';
 
+    const statusFilter = document.getElementById('statusFilter').value;
+
     for (const [userId, userData] of Object.entries(groupedData.groupedByUser)) {
-        if (userData.email.toLowerCase().includes(search.toLowerCase())) {
+        if (userData.email.toLowerCase().includes(search.toLowerCase()) &&
+            (!statusFilter || userData.status_id == statusFilter)) {
             html += `<tr>
                 <td class="px-6 py-4 whitespace-nowrap">${userData.email}</td>
                 <td class="px-6 py-4 whitespace-nowrap">${userData.class_name}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <button onclick="changeStatus(${userData.order_id})" 
+                            class="px-2 py-1 rounded text-white"
+                            style="background-color: ${userData.status_color}">
+                        ${userData.status_name}
+                    </button>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap">€${userData.total_spent.toFixed(2)}</td>
                 <td class="px-6 py-4">
                     <ul class="list-disc list-inside">
@@ -471,6 +482,44 @@ function downloadExcel() {
         alert('Fehler beim Herunterladen des Excel-Berichts');
     });
 }
+
+function changeStatus(orderId) {
+    const modal = document.getElementById('statusModal');
+    const newStatus = document.getElementById('newStatus');
+    const confirmBtn = document.getElementById('confirmStatusChange');
+    const cancelBtn = document.getElementById('cancelStatusChange');
+
+    modal.classList.remove('hidden');
+    
+    confirmBtn.onclick = () => {
+        updateOrderStatus(orderId, newStatus.value);
+        modal.classList.add('hidden');
+    };
+    
+    cancelBtn.onclick = () => {
+        modal.classList.add('hidden');
+    };
+}
+
+function updateOrderStatus(orderId, statusId) {
+    const formData = new FormData();
+    formData.append('orderId', orderId);
+    formData.append('statusId', statusId);
+
+    axios.post('update_order_status.php', formData)
+        .then(response => {
+            if (response.data.success) {
+                fetchAdminData(); // Daten neu laden
+            }
+        })
+        .catch(error => {
+            console.error('Error updating status:', error);
+            alert('Fehler beim Aktualisieren des Status');
+        });
+}
+
+// Event Listener für Status-Filter
+document.getElementById('statusFilter').addEventListener('change', updateResults);
 
 // Event Listener für DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function() {

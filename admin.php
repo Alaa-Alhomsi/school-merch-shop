@@ -8,14 +8,16 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
 require_once 'db.php';
 
 // Bestellungen mit Details abrufen
-$query = "SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price, 
+$query = "SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price, o.status_id,
                  u.email, u.class_name, 
                  oi.product_id, oi.quantity, 
-                 p.name AS product_name, p.price AS product_price
+                 p.name AS product_name, p.price AS product_price,
+                 os.name AS status_name, os.color AS status_color
           FROM orders o
           JOIN users u ON o.user_id = u.id
           JOIN order_items oi ON o.id = oi.order_id
           JOIN products p ON oi.product_id = p.id
+          JOIN order_status os ON o.status_id = os.id
           ORDER BY o.created_at DESC";
 $stmt = $pdo->query($query);
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -98,6 +100,11 @@ foreach ($orders as $order) {
     }
     $groupedByClass[$order['class_name']]['products'][$order['product_id']]['quantity'] += $order['quantity'];
 }
+
+// Status-Dropdown zum Filtern hinzufügen
+$statusQuery = "SELECT * FROM order_status ORDER BY id";
+$statusStmt = $pdo->query($statusQuery);
+$orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -155,6 +162,16 @@ foreach ($orders as $order) {
             </select>
         </div>
 
+        <div>
+            <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-2">Status:</label>
+            <select id="statusFilter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                <option value="">Alle Status</option>
+                <?php foreach ($orderStatuses as $status): ?>
+                    <option value="<?= $status['id'] ?>"><?= htmlspecialchars($status['name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
         <div id="results" class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
             <!-- Ergebnisse werden hier dynamisch eingefügt -->
         </div>
@@ -173,5 +190,21 @@ foreach ($orders as $order) {
             initializeAdmin();
         });
     </script>
+
+    <!-- Status-Änderung-Modal -->
+    <div id="statusModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <h3 class="text-lg font-medium mb-4">Status ändern</h3>
+            <select id="newStatus" class="w-full mb-4">
+                <?php foreach ($orderStatuses as $status): ?>
+                    <option value="<?= $status['id'] ?>"><?= htmlspecialchars($status['name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <div class="flex justify-end space-x-2">
+                <button id="cancelStatusChange" class="px-4 py-2 bg-gray-200 rounded">Abbrechen</button>
+                <button id="confirmStatusChange" class="px-4 py-2 bg-blue-500 text-white rounded">Speichern</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
