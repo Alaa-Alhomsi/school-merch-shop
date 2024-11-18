@@ -27,7 +27,7 @@ try {
     $pdo->beginTransaction();
 
     // Neue Bestellung erstellen
-    $stmt = $pdo->prepare("INSERT INTO orders (user_id) VALUES (?)");
+    $stmt = $pdo->prepare("INSERT INTO orders (user_id, status_id) VALUES (?, 1)");
     $stmt->execute([$user_id]);
     $order_id = $pdo->lastInsertId();
 
