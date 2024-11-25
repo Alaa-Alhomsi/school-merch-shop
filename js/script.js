@@ -236,6 +236,8 @@ function initializeIndex() {
 let groupedData = {}
 
 window.initializeAdmin = function() {
+    console.log("Admin-Initialisierung gestartet");
+    
     fetchAdminData();
     
     // Event Listener für Filter und Gruppierung
@@ -246,6 +248,40 @@ window.initializeAdmin = function() {
     
     // Initialisiere das Status-Modal
     initializeStatusModal();
+
+    // Status-Modal Event Listener
+    const confirmButton = document.getElementById('confirmStatusChange');
+    const cancelButton = document.getElementById('cancelStatusChange');
+    
+    console.log("Confirm Button gefunden:", !!confirmButton);
+    console.log("Cancel Button gefunden:", !!cancelButton);
+    
+    if (confirmButton) {
+        confirmButton.addEventListener('click', function() {
+            const newStatus = document.getElementById('newStatus').value;
+            console.log("Status ändern:", {currentOrderId, newStatus});
+            
+            if (currentOrderId && newStatus) {
+                updateOrderStatus(currentOrderId, newStatus);
+                document.getElementById('statusModal').classList.add('hidden');
+            }
+        });
+    }
+
+    document.getElementById('cancelStatusChange')?.addEventListener('click', function() {
+        document.getElementById('statusModal').classList.add('hidden');
+        currentOrderId = null;
+    });
+
+    // Status-Buttons Event Listener
+    document.querySelectorAll('[data-order-id]').forEach(button => {
+        console.log("Status-Button gefunden:", button.dataset.orderId);
+        button.addEventListener('click', function() {
+            console.log("Status-Button geklickt:", this.dataset.orderId);
+            currentOrderId = this.dataset.orderId;
+            document.getElementById('statusModal').classList.remove('hidden');
+        });
+    });
 }
 
 function fetchAdminData() {
@@ -520,15 +556,18 @@ function initializeStatusModal() {
 }
 
 function updateOrderStatus(orderId, statusId) {
+    console.log("Update Status aufgerufen:", {orderId, statusId});
+    
     const formData = new FormData();
     formData.append('orderId', orderId);
     formData.append('statusId', statusId);
-
+    
     axios.post('update_order_status.php', formData)
         .then(response => {
+            console.log("Server-Antwort:", response.data);
             if (response.data.success) {
-                // Aktualisiere die Ansicht
                 const statusButton = document.querySelector(`[data-order-id="${orderId}"]`);
+                console.log("Status-Button gefunden:", !!statusButton);
                 if (statusButton) {
                     statusButton.textContent = response.data.newStatus.name;
                     statusButton.style.backgroundColor = response.data.newStatus.color;
