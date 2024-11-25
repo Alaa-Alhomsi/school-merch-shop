@@ -568,16 +568,15 @@ function updateOrderStatus(orderId, statusId) {
         .then(response => {
             console.log("Server-Antwort:", response.data);
             if (response.data.success) {
-                const statusButton = document.querySelector(`[data-order-id="${orderId}"]`);
-                console.log("Status-Button gefunden:", !!statusButton);
-                if (statusButton) {
-                    statusButton.textContent = response.data.newStatus.name;
-                    statusButton.style.backgroundColor = response.data.newStatus.color;
-                }
+                // Aktualisiere die Ansicht
+                fetchAdminData(); // Daten neu laden
+                showNotification('Status wurde erfolgreich aktualisiert', 'success');
+            } else {
+                showNotification(response.data.message || 'Fehler beim Aktualisieren des Status', 'error');
             }
         })
         .catch(error => {
             console.error('Error updating status:', error);
-            alert('Fehler beim Aktualisieren des Status');
+            showNotification('Fehler beim Aktualisieren des Status', 'error');
         });
 }
