@@ -209,7 +209,10 @@ if (isset($_GET['edit_category'])) {
                                     <td class="border px-4 py-2"><img src="images/<?= htmlspecialchars($product['image']); ?>" alt="Produktbild" class="w-24"></td>
                                     <td class="border px-4 py-2">
                                         <a href="manage_products.php?edit_product=<?= $product['id']; ?>" class="text-blue-500 hover:underline">Bearbeiten</a>
-                                        <a href="manage_products.php?delete_product=<?= $product['id']; ?>" onclick="return confirm('Sind Sie sicher, dass Sie dieses Produkt löschen möchten?');" class="text-red-500 hover:underline ml-2">Löschen</a>
+                                        <button onclick="deleteProduct(<?= $product['id']; ?>)" 
+                                                class="text-red-500 hover:text-red-700">
+                                            <i class="fas fa-trash"></i> Löschen
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
