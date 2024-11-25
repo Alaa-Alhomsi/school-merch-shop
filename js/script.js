@@ -236,8 +236,6 @@ function initializeIndex() {
 let groupedData = {}
 
 window.initializeAdmin = function() {
-    console.log("Admin-Initialisierung gestartet");
-    
     fetchAdminData();
     
     // Event Listener für Filter und Gruppierung
@@ -246,41 +244,34 @@ window.initializeAdmin = function() {
     document.getElementById('statusFilter')?.addEventListener('change', updateResults);
     document.getElementById('downloadExcel')?.addEventListener('click', downloadExcel);
     
-    // Initialisiere das Status-Modal
-    initializeStatusModal();
-
     // Status-Modal Event Listener
+    const statusModal = document.getElementById('statusModal');
     const confirmButton = document.getElementById('confirmStatusChange');
     const cancelButton = document.getElementById('cancelStatusChange');
-    
-    console.log("Confirm Button gefunden:", !!confirmButton);
-    console.log("Cancel Button gefunden:", !!cancelButton);
-    
-    if (confirmButton) {
-        confirmButton.addEventListener('click', function() {
-            const newStatus = document.getElementById('newStatus').value;
-            console.log("Status ändern:", {currentOrderId, newStatus});
-            
-            if (currentOrderId && newStatus) {
-                updateOrderStatus(currentOrderId, newStatus);
-                document.getElementById('statusModal').classList.add('hidden');
-            }
-        });
-    }
 
-    document.getElementById('cancelStatusChange')?.addEventListener('click', function() {
-        document.getElementById('statusModal').classList.add('hidden');
-        currentOrderId = null;
+    // Füge Event-Listener für Status-Buttons hinzu
+    document.addEventListener('click', function(e) {
+        const statusButton = e.target.closest('[data-order-id]');
+        if (statusButton) {
+            console.log("Status-Button geklickt für Order:", statusButton.dataset.orderId);
+            currentOrderId = statusButton.dataset.orderId;
+            statusModal?.classList.remove('hidden');
+        }
     });
 
-    // Status-Buttons Event Listener
-    document.querySelectorAll('[data-order-id]').forEach(button => {
-        console.log("Status-Button gefunden:", button.dataset.orderId);
-        button.addEventListener('click', function() {
-            console.log("Status-Button geklickt:", this.dataset.orderId);
-            currentOrderId = this.dataset.orderId;
-            document.getElementById('statusModal').classList.remove('hidden');
-        });
+    confirmButton?.addEventListener('click', function() {
+        const newStatus = document.getElementById('newStatus').value;
+        console.log("Status ändern:", {currentOrderId, newStatus});
+        
+        if (currentOrderId && newStatus) {
+            updateOrderStatus(currentOrderId, newStatus);
+            statusModal?.classList.add('hidden');
+        }
+    });
+
+    cancelButton?.addEventListener('click', function() {
+        statusModal?.classList.add('hidden');
+        currentOrderId = null;
     });
 }
 
