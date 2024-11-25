@@ -307,7 +307,18 @@ function updateResults() {
 
     if (resultsContainer) {
         resultsContainer.innerHTML = html;
+        initializeStatusButtons();
     }
+}
+
+function initializeStatusButtons() {
+    document.querySelectorAll('.status-button').forEach(button => {
+        button.addEventListener('click', function() {
+            console.log("Status-Button geklickt für Order:", this.dataset.orderId);
+            currentOrderId = this.dataset.orderId;
+            document.getElementById('statusModal')?.classList.remove('hidden');
+        });
+    });
 }
 
 function generateUserHTML(search) {
@@ -337,9 +348,9 @@ function generateUserHTML(search) {
                                 <div class="flex items-center gap-2">
                                     <span>Bestellung #${order.order_id} (${new Date(order.date).toLocaleDateString()})</span>
                                     <button 
-                                        onclick="changeStatus(${order.order_id})"
+                                        type="button"
                                         data-order-id="${order.order_id}"
-                                        class="px-3 py-1 rounded text-white text-sm"
+                                        class="px-3 py-1 rounded text-white text-sm status-button"
                                         style="background-color: ${order.status_color}">
                                         ${order.status_name}
                                     </button>
