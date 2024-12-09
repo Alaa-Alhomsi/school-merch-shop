@@ -38,22 +38,25 @@ $randomSlogan = $slogans[array_rand($slogans)];
             display: none;
             flex: 1; /* Nimmt den verfügbaren Platz ein */
             transition: opacity 1s ease-in-out; /* Sanfter Übergang */
+            position: relative; /* Für die Positionierung der Details */
         }
 
         .slideshow-container img {
             width: 100%;
-            height: auto;
+            height: 100%; /* Vollständige Höhe */
             object-fit: cover; /* Bild anpassen */
             border-radius: 10px; /* Abgerundete Ecken */
         }
 
         .details {
-            flex: 1; /* Nimmt den verfügbaren Platz ein */
+            position: absolute; /* Über den Bildern */
+            top: 50%; /* Vertikale Zentrierung */
+            left: 50%; /* Horizontale Zentrierung */
+            transform: translate(-50%, -50%); /* Zentrierung */
             color: #fff; /* Weißer Text */
-            padding: 20px;
-            text-align: left;
-            z-index: 10; /* Über den Bildern */
+            text-align: center;
             background-color: rgba(0, 0, 0, 0.7); /* Halbtransparenter Hintergrund */
+            padding: 20px;
             border-radius: 10px; /* Abgerundete Ecken */
         }
 
