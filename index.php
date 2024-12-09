@@ -24,6 +24,50 @@ $randomSlogan = $slogans[array_rand($slogans)];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schul-Merchandise Shop - Dein Style, Deine Schule</title>
     <link href="/css/output.css" rel="stylesheet">
+    <style>
+        .slideshow-container {
+            position: relative;
+            max-width: 100%;
+            margin: auto;
+            overflow: hidden;
+            border-radius: 10px; /* Abgerundete Ecken */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Schatten für Tiefe */
+        }
+
+        .slides {
+            display: none;
+            position: absolute;
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 10px; /* Abgerundete Ecken */
+        }
+
+        .slideshow-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px; /* Abgerundete Ecken */
+        }
+
+        .fade {
+            animation: fade 1.5s ease-in-out;
+        }
+
+        @keyframes fade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slogan {
+            text-align: center;
+            font-size: 2rem;
+            margin: 20px 0;
+            color: #333;
+            background-color: rgba(255, 255, 255, 0.8); /* Hintergrund für bessere Lesbarkeit */
+            padding: 10px;
+            border-radius: 5px; /* Abgerundete Ecken */
+        }
+    </style>
 </head>
 <body>
     <?php include 'navbar.php'; ?>
@@ -31,8 +75,32 @@ $randomSlogan = $slogans[array_rand($slogans)];
     <header class="bg-blue-600 text-white text-center py-20">
         <h1 class="text-4xl font-bold mb-4">Willkommen im Schul-Merchandise Shop!</h1>
         <p class="text-xl mb-4"><?php echo $randomSlogan; ?></p>
-        <a href="#products" class="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-gray-200 transition">Jetzt shoppen</a>
     </header>
+
+    <div class="slideshow-container">
+        <?php foreach ($latestProducts as $index => $product): ?>
+            <div class="slides fade">
+                <img src="images/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                <div class="slogan"><?php echo htmlspecialchars($product['name']); ?></div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <script>
+        let slideIndex = 0;
+        showSlides();
+
+        function showSlides() {
+            const slides = document.getElementsByClassName("slides");
+            for (let i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";  
+            }
+            slideIndex++;
+            if (slideIndex > slides.length) {slideIndex = 1}    
+            slides[slideIndex - 1].style.display = "block";  
+            setTimeout(showSlides, 3000); // Wechselt alle 3 Sekunden
+        }
+    </script>
 
     <main class="container mx-auto px-4 py-12">
         <h2 class="text-3xl font-bold text-center mb-8">Neueste Produkte</h2>
