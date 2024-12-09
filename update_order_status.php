@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $pdo->prepare("SELECT os.name, os.color 
                                      FROM orders o 
                                      JOIN order_status os ON o.status_id = os.id 
-                                     WHERE o.id = ?");
+                                     WHERE o.id = ? AND o.deleted_at IS NULL");
                 $stmt->execute([$orderId]);
                 $newStatus = $stmt->fetch(PDO::FETCH_ASSOC);
 

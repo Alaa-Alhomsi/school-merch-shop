@@ -12,7 +12,7 @@ $offset = ($page - 1) * $limit;
 $query = "SELECT p.*, c.name AS category_name, c.allows_sizes 
           FROM products p 
           JOIN categories c ON p.category_id = c.id 
-          WHERE p.name LIKE :search 
+          WHERE p.name LIKE :search AND p.deleted_at IS NULL 
           " . ($category ? "AND c.id = :category " : "") . "
           ORDER BY $sort 
           LIMIT :limit OFFSET :offset";

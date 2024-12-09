@@ -11,19 +11,15 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
 }
 
 // Hole die Produkt-ID
-$product_id = isset($_GET['delete_product']) ? (int)$_GET['delete_product'] : null;
+$product_id = isset($_POST['product_id']) ? (int)$_POST['product_id'] : null;
 
 if ($product_id) {
     try {
         // Beginne Transaktion
         $pdo->beginTransaction();
 
-        // Lösche zuerst alle zugehörigen Bestellpositionen
-        $stmt = $pdo->prepare("DELETE FROM order_items WHERE product_id = ?");
-        $stmt->execute([$product_id]);
-
-        // Dann lösche das Produkt
-        $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
+        // Lösche das Produkt, aber behalte die Bestellungen
+        $stmt = $pdo->prepare("UPDATE products SET deleted_at = NOW() WHERE id = ?");
         $success = $stmt->execute([$product_id]);
 
         if ($success) {

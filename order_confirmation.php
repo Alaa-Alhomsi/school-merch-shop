@@ -27,11 +27,10 @@ if (!$order) {
 }
 
 // Bestellpositionen abrufen
-$stmt = $pdo->prepare("SELECT oi.*, p.name, p.price, s.name as size_name 
+$stmt = $pdo->prepare("SELECT oi.*, p.name AS product_name 
                        FROM order_items oi 
                        JOIN products p ON oi.product_id = p.id 
-                       LEFT JOIN sizes s ON oi.size_name = s.name 
-                       WHERE oi.order_id = ?");
+                       WHERE oi.order_id = ? AND p.deleted_at IS NULL");
 $stmt->execute([$order_id]);
 $order_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

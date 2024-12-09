@@ -4,7 +4,7 @@ require_once 'db.php';
 
 //Test
 // Hole die neuesten Produkte
-$stmt = $pdo->query("SELECT * FROM products ORDER BY created_at DESC LIMIT 6");
+$stmt = $pdo->query("SELECT * FROM products WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 6");
 $latestProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Hole Kategorien

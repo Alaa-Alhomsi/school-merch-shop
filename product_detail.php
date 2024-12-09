@@ -12,7 +12,7 @@ if ($product_id <= 0) {
 $stmt = $pdo->prepare("SELECT p.*, c.name AS category_name, c.allows_sizes 
                        FROM products p 
                        JOIN categories c ON p.category_id = c.id 
-                       WHERE p.id = ?");
+                       WHERE p.id = ? AND p.deleted_at IS NULL");
 $stmt->execute([$product_id]);
 $product = $stmt->fetch(PDO::FETCH_ASSOC);
 

@@ -29,7 +29,7 @@ if (!empty($cart)) {
     $stmt = $pdo->prepare("SELECT p.*, c.allows_sizes 
                            FROM products p 
                            JOIN categories c ON p.category_id = c.id 
-                           WHERE p.id IN ($placeholders)");
+                           WHERE p.id IN ($placeholders) AND p.deleted_at IS NULL");
     $stmt->execute($product_ids);
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

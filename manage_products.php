@@ -8,7 +8,10 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
 require_once 'db.php';
 
 // Produkte abrufen
-$query = "SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id";
+$query = "SELECT p.*, c.name as category_name 
+          FROM products p 
+          LEFT JOIN categories c ON p.category_id = c.id 
+          WHERE p.deleted_at IS NULL";
 $products = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
 // Kategorien abrufen

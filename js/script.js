@@ -580,3 +580,27 @@ function updateOrderStatus(orderId, statusId) {
             showNotification('Fehler beim Aktualisieren des Status', 'error');
         });
 }
+
+function deleteProduct(productId) {
+    if (confirm('Sind Sie sicher, dass Sie dieses Produkt löschen möchten?')) {
+        axios.post('delete_product.php', {
+            product_id: productId
+        })
+        .then(response => {
+            if (response.data.success) {
+                // Produkt aus der DOM entfernen
+                const productElement = document.querySelector(`tr[data-product-id="${productId}"]`);
+                if (productElement) {
+                    productElement.remove();
+                }
+                showNotification('Produkt wurde erfolgreich gelöscht', 'success');
+            } else {
+                showNotification(response.data.message || 'Fehler beim Löschen des Produkts', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Fehler beim Löschen des Produkts', 'error');
+        });
+    }
+}
