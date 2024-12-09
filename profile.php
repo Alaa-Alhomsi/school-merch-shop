@@ -43,12 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // Bestellungen abrufen
 $stmt = $pdo->prepare("
-    SELECT o.id AS order_id, o.created_at AS order_date, o.total_price, o.status_id,
-           os.status_name, p.id AS product_id, p.name AS product_name, oi.quantity, oi.price AS item_price
+    SELECT o.id AS order_id, o.created_at AS order_date, o.total_price, o.cancellation_requested, o.cancellation_approved,
+           p.id AS product_id, p.name AS product_name, oi.quantity, oi.price AS item_price
     FROM orders o
     JOIN order_items oi ON o.id = oi.order_id
     JOIN products p ON oi.product_id = p.id
-    JOIN order_status os ON o.status_id = os.id
     WHERE o.user_id = ?
     ORDER BY o.created_at DESC
 ");
@@ -60,13 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['request_cancellation']
     $orderId = $_POST['order_id'];
 
     // Überprüfen, ob die Stornierung bereits beantragt wurde
-    $stmt = $pdo->prepare("SELECT status_id FROM orders WHERE id = ? AND user_id = ?");
+    $stmt = $pdo->prepare("SELECT cancellation_requested, cancellation_approved FROM orders WHERE id = ? AND user_id = ?");
     $stmt->execute([$orderId, $userId]);
     $order = $stmt->fetch();
 
-    if ($order && $order['status_id'] !== 4) { // 4 = Storniert
+    if ($order && !$order['cancellation_requested'] && $order['cancellation_approved'] === null) {
         // Stornierungsanfrage stellen
-        $stmt = $pdo->prepare("UPDATE orders SET status_id = 4 WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE orders SET cancellation_requested = TRUE WHERE id = ?");
         $stmt->execute([$orderId]);
         $successMessage = "Stornierungsanfrage erfolgreich gestellt.";
     } else {
@@ -151,15 +150,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['request_cancellation']
                                         <td class="px-6 py-4"><?php echo number_format($item['total_price'], 2, ',', '.') . ' €'; ?></td>
                                         <td class="px-6 py-4">
                                             <?php
-                                            if ($item['status_id'] === 4) {
-                                                echo "Storniert";
+                                            if ($item['cancellation_requested']) {
+                                                echo "Stornierung beantragt";
+                                            } elseif ($item['cancellation_approved'] === true) {
+                                                echo "Stornierung genehmigt";
+                                            } elseif ($item['cancellation_approved'] === false) {
+                                                echo "Stornierung abgelehnt";
                                             } else {
-                                                echo htmlspecialchars($item['status_name']);
+                                                echo "Aktiv";
                                             }
                                             ?>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <?php if ($item['status_id'] !== 4): ?>
+                                            <?php if (!$item['cancellation_requested'] && $item['cancellation_approved'] === null): ?>
                                                 <form method="POST">
                                                     <input type="hidden" name="order_id" value="<?php echo $item['order_id']; ?>">
                                                     <button type="submit" name="request_cancellation" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
