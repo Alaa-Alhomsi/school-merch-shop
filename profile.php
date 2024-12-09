@@ -43,8 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // Bestellungen abrufen
 $stmt = $pdo->prepare("
-    SELECT o.id AS order_id, o.created_at AS order_date, o.total_price, o.cancellation_requested, o.cancellation_approved,
-           p.id AS product_id, p.name AS product_name, oi.quantity, oi.price AS item_price
+    SELECT o.id AS order_id, o.created_at AS order_date, o.total_price,
+           p.id AS product_id, p.name AS product_name, oi.quantity, oi.price AS item_price,
+           oi.size_name
     FROM orders o
     JOIN order_items oi ON o.id = oi.order_id
     JOIN products p ON oi.product_id = p.id
@@ -54,23 +55,24 @@ $stmt = $pdo->prepare("
 $stmt->execute([$userId]);
 $orderItems = $stmt->fetchAll();
 
-// Stornierungsanfrage bearbeiten
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['request_cancellation'])) {
-    $orderId = $_POST['order_id'];
-
-    // Überprüfen, ob die Stornierung bereits beantragt wurde
-    $stmt = $pdo->prepare("SELECT cancellation_requested, cancellation_approved FROM orders WHERE id = ? AND user_id = ?");
-    $stmt->execute([$orderId, $userId]);
-    $order = $stmt->fetch();
-
-    if ($order && !$order['cancellation_requested'] && $order['cancellation_approved'] === null) {
-        // Stornierungsanfrage stellen
-        $stmt = $pdo->prepare("UPDATE orders SET cancellation_requested = TRUE WHERE id = ?");
-        $stmt->execute([$orderId]);
-        $successMessage = "Stornierungsanfrage erfolgreich gestellt.";
-    } else {
-        $errorMessage = "Stornierung kann nicht beantragt werden.";
+// Bestellungen gruppieren
+$orders = [];
+foreach ($orderItems as $item) {
+    if (!isset($orders[$item['order_id']])) {
+        $orders[$item['order_id']] = [
+            'id' => $item['order_id'],
+            'date' => $item['order_date'],
+            'total_price' => $item['total_price'],
+            'items' => []
+        ];
     }
+    $orders[$item['order_id']]['items'][] = [
+        'product_id' => $item['product_id'],
+        'product_name' => $item['product_name'],
+        'quantity' => $item['quantity'],
+        'price' => $item['item_price'],
+        'size_name' => $item['size_name']
+    ];
 }
 
 ?>
@@ -128,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['request_cancellation']
 
             <div class="bg-white shadow-md rounded px-8 pt-6 pb-8">
                 <h2 class="text-2xl font-bold mb-4">Meine Bestellungen</h2>
-                <?php if (empty($orderItems)): ?>
+                <?php if (empty($orders)): ?>
                     <p>Sie haben noch keine Bestellungen aufgegeben.</p>
                 <?php else: ?>
                     <div class="overflow-x-auto">
@@ -138,38 +140,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['request_cancellation']
                                     <th scope="col" class="px-6 py-3">Bestellnummer</th>
                                     <th scope="col" class="px-6 py-3">Datum</th>
                                     <th scope="col" class="px-6 py-3">Gesamtpreis</th>
-                                    <th scope="col" class="px-6 py-3">Status</th>
-                                    <th scope="col" class="px-6 py-3">Aktion</th>
+                                    <th scope="col" class="px-6 py-3">Produkte</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($orderItems as $item): ?>
+                                <?php foreach ($orders as $order): ?>
                                     <tr class="bg-white border-b">
-                                        <td class="px-6 py-4"><?php echo $item['order_id']; ?></td>
-                                        <td class="px-6 py-4"><?php echo $item['order_date']; ?></td>
-                                        <td class="px-6 py-4"><?php echo number_format($item['total_price'], 2, ',', '.') . ' €'; ?></td>
+                                        <td class="px-6 py-4"><?php echo $order['id']; ?></td>
+                                        <td class="px-6 py-4"><?php echo $order['date']; ?></td>
+                                        <td class="px-6 py-4"><?php echo number_format($order['total_price'], 2, ',', '.') . ' €'; ?></td>
                                         <td class="px-6 py-4">
-                                            <?php
-                                            if ($item['cancellation_requested']) {
-                                                echo "Stornierung beantragt";
-                                            } elseif ($item['cancellation_approved'] === true) {
-                                                echo "Stornierung genehmigt";
-                                            } elseif ($item['cancellation_approved'] === false) {
-                                                echo "Stornierung abgelehnt";
-                                            } else {
-                                                echo "Aktiv";
-                                            }
-                                            ?>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <?php if (!$item['cancellation_requested'] && $item['cancellation_approved'] === null): ?>
-                                                <form method="POST">
-                                                    <input type="hidden" name="order_id" value="<?php echo $item['order_id']; ?>">
-                                                    <button type="submit" name="request_cancellation" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                                        Stornierung beantragen
-                                                    </button>
-                                                </form>
-                                            <?php endif; ?>
+                                            <ul>
+                                                <?php foreach ($order['items'] as $item): ?>
+                                                    <li>
+                                                        <a href="product_detail.php?id=<?php echo $item['product_id']; ?>" class="text-blue-600 hover:underline">
+                                                            <?php echo htmlspecialchars($item['product_name']); ?>
+                                                        </a>
+                                                        <?php if (!empty($item['size_name'])): ?>
+                                                            (Größe: <?php echo htmlspecialchars($item['size_name']); ?>)
+                                                        <?php endif; ?>
+                                                        (<?php echo $item['quantity']; ?> x <?php echo number_format($item['price'], 2, ',', '.') . ' €'; ?>)
+                                                    </li>
+                                                <?php endforeach; ?>
+                                            </ul>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
