@@ -139,15 +139,15 @@ $randomSlogan = $slogans[array_rand($slogans)];
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-4xl font-extrabold mb-12 text-center">Warum unser Schul-Merchandise?</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md" onclick="window.location.href='#'">
+                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md">
                         <h3 class="text-2xl font-semibold mb-4">Qualität</h3>
                         <p>Hochwertige Produkte, die lange halten und gut aussehen.</p>
                     </div>
-                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md" onclick="window.location.href='#'">
+                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md">
                         <h3 class="text-2xl font-semibold mb-4">Einzigartigkeit</h3>
                         <p>Exklusive Designs, die deine Schulzugehörigkeit zeigen.</p>
                     </div>
-                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md" onclick="window.location.href='#'">
+                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md">
                         <h3 class="text-2xl font-semibold mb-4">Schulgeist</h3>
                         <p>Stärke den Zusammenhalt und zeige deinen Schulstolz.</p>
                     </div>
