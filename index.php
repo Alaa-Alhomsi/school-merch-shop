@@ -70,6 +70,14 @@ $randomSlogan = $slogans[array_rand($slogans)];
             font-size: 2rem;
             margin: 20px 0;
         }
+        .product-card, .feature-card {
+            transition: all 0.3s ease;
+            cursor: pointer; /* Zeigt an, dass die Karte klickbar ist */
+        }
+        .product-card:hover, .feature-card:hover {
+            transform: translateY(-5px); /* Leichtes Anheben bei Hover */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Schatteneffekt */
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -113,15 +121,12 @@ $randomSlogan = $slogans[array_rand($slogans)];
                 <h2 class="text-4xl font-extrabold text-gray-900 mb-12 text-center">Unsere neuesten Produkte</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                     <?php foreach ($latestProducts as $index => $product): ?>
-                        <div class="product-card bg-white shadow-lg rounded-lg overflow-hidden" id="product-<?php echo $index; ?>" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="500">
+                        <div class="product-card bg-white shadow-lg rounded-lg overflow-hidden" id="product-<?php echo $index; ?>" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-perspective="500" onclick="window.location.href='product_detail.php?id=<?php echo $product['id']; ?>'">
                             <img src="images/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="w-full h-48 object-cover">
                             <div class="p-6">
                                 <h3 class="text-xl font-semibold mb-2"><?php echo htmlspecialchars($product['name']); ?></h3>
                                 <p class="text-gray-600 mb-4"><?php echo htmlspecialchars(substr($product['description'], 0, 100)) . '...'; ?></p>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-indigo-600 font-bold">€<?php echo number_format($product['price'], 2); ?></span>
-                                    <a href="product_detail.php?id=<?php echo $product['id']; ?>" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-300 transform hover:scale-105">Details</a>
-                                </div>
+                                <span class="text-indigo-600 font-bold">€<?php echo number_format($product['price'], 2); ?></span>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -134,15 +139,15 @@ $randomSlogan = $slogans[array_rand($slogans)];
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-4xl font-extrabold mb-12 text-center">Warum unser Schul-Merchandise?</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md">
+                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md" onclick="window.location.href='#'">
                         <h3 class="text-2xl font-semibold mb-4">Qualität</h3>
                         <p>Hochwertige Produkte, die lange halten und gut aussehen.</p>
                     </div>
-                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md">
+                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md" onclick="window.location.href='#'">
                         <h3 class="text-2xl font-semibold mb-4">Einzigartigkeit</h3>
                         <p>Exklusive Designs, die deine Schulzugehörigkeit zeigen.</p>
                     </div>
-                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md">
+                    <div class="feature-card bg-indigo-800 p-8 rounded-lg shadow-md" onclick="window.location.href='#'">
                         <h3 class="text-2xl font-semibold mb-4">Schulgeist</h3>
                         <p>Stärke den Zusammenhalt und zeige deinen Schulstolz.</p>
                     </div>
