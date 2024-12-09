@@ -30,6 +30,8 @@ $randomSlogan = $slogans[array_rand($slogans)];
             max-width: 100%;
             margin: auto;
             overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         .slides {
@@ -38,11 +40,13 @@ $randomSlogan = $slogans[array_rand($slogans)];
             width: 100%;
             height: 400px;
             object-fit: cover;
+            border-radius: 10px;
         }
 
         .slideshow-container img {
             width: 100%;
             height: auto;
+            border-radius: 10px;
         }
 
         .fade {
@@ -59,6 +63,9 @@ $randomSlogan = $slogans[array_rand($slogans)];
             font-size: 2rem;
             margin: 20px 0;
             color: #333;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
         }
     </style>
 </head>
