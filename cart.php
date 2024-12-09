@@ -2,20 +2,6 @@
 session_start();
 require_once 'db.php';
 
-// Überprüfen, ob der Benutzer die Bestätigung gegeben hat
-$confirmed = isset($_SESSION['confirmed']) ? $_SESSION['confirmed'] : false;
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['confirm'])) {
-        $_SESSION['confirmed'] = true;
-        // Weiterleitung zur Bestellbestätigung oder zur nächsten Seite
-        header("Location: order_confirmation.php");
-        exit;
-    } else {
-        $error = "Bitte bestätigen Sie die Nutzungsbedingungen.";
-    }
-}
-
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
@@ -73,40 +59,6 @@ $_SESSION['cart'] = $cart;
     <title>Warenkorb</title>
     <link href="/css/output.css" rel="stylesheet">
     <script type="module" src="js/script.js" defer></script>
-    <style>
-        /* Modal Styles */
-        .modal {
-            display: none; /* Standardmäßig versteckt */
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body class="h-full flex flex-col">
     <?php include 'navbar.php'; ?>
@@ -169,42 +121,5 @@ $_SESSION['cart'] = $cart;
             initializeCart();
         });
     </script>
-
-    <!-- Modal -->
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="document.getElementById('myModal').style.display='none'">&times;</span>
-            <h2>Nutzungsbedingungen</h2>
-            <p>Bitte bestätigen Sie, dass die Schule (Hak & Has Mistelbach) nichts Gewerbliches macht und diese Seite lediglich als Bestellliste dient. Die Bestellungen werden erst beim Großhändler aufgegeben.</p>
-            <form method="POST">
-                <label>
-                    <input type="checkbox" name="confirm" required>
-                    Ich bestätige die oben genannten Bedingungen.
-                </label>
-                <br><br>
-                <button type="submit">Bestätigen</button>
-            </form>
-            <?php if (isset($error)): ?>
-                <p style="color: red;"><?php echo $error; ?></p>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <script>
-        // Modal anzeigen, wenn der Benutzer auf "Zur Kasse" klickt
-        function showModal() {
-            document.getElementById('myModal').style.display = 'block';
-        }
-
-        // Schließen des Modals
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('myModal')) {
-                document.getElementById('myModal').style.display = 'none';
-            }
-        }
-    </script>
-
-    <!-- Button zur Kasse -->
-    <button onclick="showModal()">Zur Kasse</button>
 </body>
 </html>
