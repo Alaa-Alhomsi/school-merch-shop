@@ -26,39 +26,40 @@ $randomSlogan = $slogans[array_rand($slogans)];
     <link href="/css/output.css" rel="stylesheet">
     <style>
         .slideshow-container {
-            position: relative;
-            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             height: 100vh; /* Vollständige Höhe des Viewports */
             overflow: hidden;
-            display: flex;
-            align-items: center; /* Zentriert den Inhalt vertikal */
-            justify-content: center; /* Zentriert den Inhalt horizontal */
             background-color: rgba(0, 0, 0, 0.5); /* Eingrauen des Hintergrunds */
         }
 
         .slides {
             display: none;
-            position: absolute;
-            width: 100%;
-            height: 100%; /* Vollständige Höhe */
-            object-fit: cover;
+            flex: 1; /* Nimmt den verfügbaren Platz ein */
+            transition: opacity 1s ease-in-out; /* Sanfter Übergang */
         }
 
         .slideshow-container img {
             width: 100%;
-            height: 100%; /* Vollständige Höhe */
+            height: auto;
             object-fit: cover; /* Bild anpassen */
+            border-radius: 10px; /* Abgerundete Ecken */
+        }
+
+        .details {
+            flex: 1; /* Nimmt den verfügbaren Platz ein */
+            color: #fff; /* Weißer Text */
+            padding: 20px;
+            text-align: left;
+            z-index: 10; /* Über den Bildern */
+            background-color: rgba(0, 0, 0, 0.7); /* Halbtransparenter Hintergrund */
+            border-radius: 10px; /* Abgerundete Ecken */
         }
 
         .slogan {
-            position: relative;
-            z-index: 10; /* Über den Bildern */
-            text-align: center;
             font-size: 2rem;
-            color: #fff; /* Weißer Text */
-            background-color: rgba(0, 0, 0, 0.7); /* Halbtransparenter Hintergrund für bessere Lesbarkeit */
-            padding: 20px;
-            border-radius: 5px; /* Abgerundete Ecken */
+            margin: 20px 0;
         }
     </style>
 </head>
@@ -69,7 +70,11 @@ $randomSlogan = $slogans[array_rand($slogans)];
         <?php foreach ($latestProducts as $index => $product): ?>
             <div class="slides">
                 <img src="images/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
-                <div class="slogan"><?php echo htmlspecialchars($product['name']); ?></div>
+                <div class="details">
+                    <h2 class="slogan"><?php echo htmlspecialchars($product['name']); ?></h2>
+                    <p class="text-lg mb-4">Kategorie: <?php echo htmlspecialchars($product['category_name']); ?></p>
+                    <a href="product_detail.php?id=<?php echo $product['id']; ?>" class="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition">Details</a>
+                </div>
             </div>
         <?php endforeach; ?>
     </header>
@@ -85,7 +90,7 @@ $randomSlogan = $slogans[array_rand($slogans)];
             }
             slideIndex++;
             if (slideIndex > slides.length) {slideIndex = 1}    
-            slides[slideIndex - 1].style.display = "block";  
+            slides[slideIndex - 1].style.display = "flex";  
             setTimeout(showSlides, 3000); // Wechselt alle 3 Sekunden
         }
     </script>
