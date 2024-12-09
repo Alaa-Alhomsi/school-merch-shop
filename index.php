@@ -34,6 +34,9 @@ $randomSlogan = $slogans[array_rand($slogans)];
             min-height: 100vh;
             width: 100vw;
             position: relative; /* Für die Positionierung der Slideshow */
+            display: flex;
+            align-items: center; /* Vertikale Zentrierung */
+            justify-content: center; /* Horizontale Zentrierung */
         }
         .slideshow-container {
             position: absolute;
