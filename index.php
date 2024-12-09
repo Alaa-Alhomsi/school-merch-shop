@@ -15,16 +15,6 @@ $slogans = [
     "Einzigartig wie deine Schule!"
 ];
 $randomSlogan = $slogans[array_rand($slogans)];
-
-// Berechne die Anzahl der Produkte im Warenkorb
-$cartCount = isset($_SESSION['cart']) ? array_sum(array_column($_SESSION['cart'], 'quantity')) : 0;
-
-// Überprüfe, ob der Willkommensbanner angezeigt werden soll
-$showWelcome = false;
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && !isset($_SESSION['welcome_shown'])) {
-    $showWelcome = true;
-    $_SESSION['welcome_shown'] = true;
-}
 ?>
 
 <!DOCTYPE html>
@@ -36,8 +26,6 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && !isset($_S
     <link href="/css/output.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
     <style>
         body {
             overflow-x: hidden;
@@ -45,77 +33,58 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && !isset($_S
         .scroll-section {
             min-height: 100vh;
             width: 100vw;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative; /* Für die Positionierung der Slideshow */
         }
         .slideshow-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh; /* Vollständige Höhe des Viewports */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%; /* Vollständige Höhe */
             overflow: hidden;
-            background-color: rgba(0, 0, 0, 0.5); /* Eingrauen des Hintergrunds */
+            z-index: 1; /* Hinter dem Slogan */
         }
         .slides {
             display: none;
-            flex: 1; /* Nimmt den verfügbaren Platz ein */
+            width: 100%;
+            height: 100%; /* Vollständige Höhe */
+            position: absolute;
             transition: opacity 1s ease-in-out; /* Sanfter Übergang */
-            position: relative; /* Für die Positionierung der Details */
         }
         .slideshow-container img {
             width: 100%;
             height: 100%; /* Vollständige Höhe */
             object-fit: cover; /* Bild anpassen */
-            border-radius: 10px; /* Abgerundete Ecken */
+            filter: brightness(0.5); /* Bild abdunkeln */
         }
-        .details {
-            position: absolute; /* Über den Bildern */
-            top: 50%; /* Vertikale Zentrierung */
-            left: 50%; /* Horizontale Zentrierung */
-            transform: translate(-50%, -50%); /* Zentrierung */
-            color: #fff; /* Weißer Text */
+        .content {
+            position: relative;
+            z-index: 2; /* Vor der Slideshow */
             text-align: center;
-            background-color: rgba(0, 0, 0, 0.7); /* Halbtransparenter Hintergrund */
-            padding: 20px;
-            border-radius: 10px; /* Abgerundete Ecken */
+            color: white; /* Weißer Text */
         }
-        .product-card, .feature-card {
-            transition: all 0.3s ease;
-            transform-style: preserve-3d;
-        }
-        .product-card:hover, .feature-card:hover {
-            transform: translateZ(20px) rotateX(5deg) rotateY(5deg);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        .slogan {
+            font-size: 2rem;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body class="min-h-screen">
     <?php include 'navbar.php'; ?>
-    <div id="background-canvas"></div>
     <main>
         <!-- Hero Section -->
         <section class="scroll-section bg-indigo-900 text-white">
-            <div class="text-center">
-                <h1 class="text-6xl font-extrabold mb-4 opacity-0 floating" id="hero-title">Schul-Merchandise Shop</h1>
-                <p class="text-2xl mb-8 opacity-0" id="hero-slogan"><?php echo $randomSlogan; ?></p>
-                <a href="shop.php" class="inline-block bg-white text-indigo-600 px-8 py-3 rounded-md text-lg font-medium hover:bg-indigo-50 transition duration-300 opacity-0 transform hover:scale-110" id="hero-cta">Jetzt einkaufen</a>
-            </div>
-        </section>
-
-        <!-- Slideshow Section -->
-        <section class="scroll-section">
             <div class="slideshow-container">
                 <?php foreach ($latestProducts as $index => $product): ?>
                     <div class="slides">
                         <img src="images/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
-                        <div class="details">
-                            <h2 class="slogan"><?php echo htmlspecialchars($product['name']); ?></h2>
-                            <p class="text-lg mb-4">Kategorie: <?php echo htmlspecialchars($product['category_name']); ?></p>
-                            <a href="product_detail.php?id=<?php echo $product['id']; ?>" class="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition">Details</a>
-                        </div>
                     </div>
                 <?php endforeach; ?>
+            </div>
+            <div class="content">
+                <h1 class="text-6xl font-extrabold mb-4 opacity-0 floating" id="hero-title">Schul-Merchandise Shop</h1>
+                <p class="text-2xl mb-8 opacity-0" id="hero-slogan"><?php echo $randomSlogan; ?></p>
+                <a href="shop.php" class="inline-block bg-white text-indigo-600 px-8 py-3 rounded-md text-lg font-medium hover:bg-indigo-50 transition duration-300 opacity-0 transform hover:scale-110" id="hero-cta">Jetzt einkaufen</a>
             </div>
         </section>
 
@@ -130,7 +99,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && !isset($_S
                 }
                 slideIndex++;
                 if (slideIndex > slides.length) {slideIndex = 1}    
-                slides[slideIndex - 1].style.display = "flex";  
+                slides[slideIndex - 1].style.display = "block";  
                 setTimeout(showSlides, 3000); // Wechselt alle 3 Sekunden
             }
         </script>
@@ -234,41 +203,6 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && !isset($_S
                 duration: 0.5,
                 delay: index * 0.2
             });
-        });
-
-        // Three.js Hintergrund
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({alpha: true});
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.getElementById('background-canvas').appendChild(renderer.domElement);
-        const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
-        const material = new THREE.MeshBasicMaterial({color: 0x6366f1, wireframe: true});
-        const torusKnot = new THREE.Mesh(geometry, material);
-        scene.add(torusKnot);
-        camera.position.z = 30;
-
-        function animate() {
-            requestAnimationFrame(animate);
-            torusKnot.rotation.x += 0.01;
-            torusKnot.rotation.y += 0.01;
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // Resize-Handler
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // Initialisiere Vanilla Tilt für 3D-Hover-Effekte
-        VanillaTilt.init(document.querySelectorAll(".product-card, .feature-card"), {
-            max: 25,
-            speed: 400,
-            glare: true,
-            "max-glare": 0.5,
         });
     </script>
 </body>
