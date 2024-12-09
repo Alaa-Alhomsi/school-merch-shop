@@ -1,17 +1,39 @@
 <?php
 session_start();
+require_once 'db.php';
+
+// Überprüfe Admin-Berechtigung
 if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
-    header('Location: shop.php');
+    header('Location: login.php');
     exit;
 }
 
-require_once 'db.php';
+// Überprüfe, ob ein Produkt gelöscht werden soll
+if (isset($_GET['delete_product'])) {
+    $product_id = (int)$_GET['delete_product'];
+
+    // Lösche das Produkt, aber behalte die Bestellungen
+    $stmt = $pdo->prepare("UPDATE products SET deleted_at = NOW() WHERE id = ?");
+    $success = $stmt->execute([$product_id]);
+
+    if ($success) {
+        // Erfolgreich gelöscht
+        $_SESSION['message'] = 'Produkt wurde erfolgreich gelöscht.';
+    } else {
+        // Fehler beim Löschen
+        $_SESSION['message'] = 'Fehler beim Löschen des Produkts.';
+    }
+
+    // Weiterleitung zurück zur Produktverwaltung
+    header('Location: manage_products.php');
+    exit;
+}
 
 // Produkte abrufen
 $query = "SELECT p.*, c.name as category_name 
           FROM products p 
           LEFT JOIN categories c ON p.category_id = c.id 
-          WHERE p.deleted_at IS NULL";
+          WHERE p.deleted_at IS NULL"; // Nur nicht gelöschte Produkte
 $products = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
 // Kategorien abrufen
@@ -64,35 +86,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
         $update_query = "UPDATE products SET name = ?, description = ?, price = ?, category_id = ? WHERE id = ?";
         $stmt = $pdo->prepare($update_query);
         $stmt->execute([$name, $description, $price, $category_id, $product_id]);
-    }
-
-    header('Location: manage_products.php');
-    exit;
-}
-
-// Produkt löschen
-if (isset($_GET['delete_product'])) {
-    $product_id = (int)$_GET['delete_product'];
-
-    // Zuerst das Bild des Produkts abrufen
-    $stmt = $pdo->prepare("SELECT image FROM products WHERE id = ?");
-    $stmt->execute([$product_id]);
-    $product = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($product) {
-        // Bildpfad definieren
-        $image_path = 'images/' . $product['image'];
-        $deleted_path = 'deleted/' . $product['image'];
-
-        // Bild in den 'deleted' Ordner verschieben
-        if (file_exists($image_path)) {
-            rename($image_path, $deleted_path);
-        }
-
-        // Produkt aus der Datenbank löschen
-        $delete_query = "DELETE FROM products WHERE id = ?";
-        $stmt = $pdo->prepare($delete_query);
-        $stmt->execute([$product_id]);
     }
 
     header('Location: manage_products.php');
@@ -212,10 +205,12 @@ if (isset($_GET['edit_category'])) {
                                     <td class="border px-4 py-2"><img src="images/<?= htmlspecialchars($product['image']); ?>" alt="Produktbild" class="w-24"></td>
                                     <td class="border px-4 py-2">
                                         <a href="manage_products.php?edit_product=<?= $product['id']; ?>" class="text-blue-500 hover:underline">Bearbeiten</a>
-                                        <button onclick="deleteProduct(<?= $product['id']; ?>)" 
-                                                class="text-red-500 hover:text-red-700">
-                                            <i class="fas fa-trash"></i> Löschen
-                                        </button>
+                                        <form action="manage_products.php" method="get" style="display:inline;">
+                                            <input type="hidden" name="delete_product" value="<?= $product['id']; ?>">
+                                            <button type="submit" onclick="return confirm('Sind Sie sicher, dass Sie dieses Produkt löschen möchten?');" class="text-red-500 hover:text-red-700">
+                                                <i class="fas fa-trash"></i> Löschen
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
