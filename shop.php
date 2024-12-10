@@ -13,7 +13,7 @@ $query = "SELECT p.*, c.name AS category_name, c.allows_sizes
           FROM products p 
           JOIN categories c ON p.category_id = c.id 
           WHERE p.name LIKE :search AND p.deleted_at IS NULL 
-          " . ($category ? "AND c.id = :category " : "") . "
+          " . ($category ? "AND c.id = :category AND c.deleted_at IS NULL " : "") . "
           ORDER BY $sort 
           LIMIT :limit OFFSET :offset";
 $stmt = $pdo->prepare($query);

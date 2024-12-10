@@ -24,10 +24,10 @@
                         <svg width="20" height="20" class="mr-2"><?php include 'svg/github.svg'; ?></svg>
                         Alaa-Alhomsi
                     </a>
-                    <a href="https://github.com/PaulSchoefmann" target="_blank" rel="noopener noreferrer" class="text-white hover:text-gray-300 flex items-center">
+                    <!--a href="https://github.com/PaulSchoefmann" target="_blank" rel="noopener noreferrer" class="text-white hover:text-gray-300 flex items-center">
                         <svg width="20" height="20" class="mr-2"><?php include 'svg/github.svg'; ?></svg>
                         PaulSchoefmann
-                    </a>
+                    </a-->
                 </div>
             </div>
             <div>

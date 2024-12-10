@@ -82,15 +82,15 @@ if (isset($_GET['delete_product'])) {
     if ($product) {
         // Bildpfad definieren
         $image_path = 'images/' . $product['image'];
-        $deleted_path = 'deleted/' . $product['image'];
+        $deleted_path = 'images/deleted/' . $product['image'];
 
         // Bild in den 'deleted' Ordner verschieben
         if (file_exists($image_path)) {
             rename($image_path, $deleted_path);
         }
 
-        // Produkt aus der Datenbank löschen
-        $delete_query = "DELETE FROM products WHERE id = ?";
+        // Produkt als gelöscht markieren
+        $delete_query = "UPDATE products SET deleted_at = NOW() WHERE id = ?";
         $stmt = $pdo->prepare($delete_query);
         $stmt->execute([$product_id]);
     }
@@ -125,9 +125,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_category'])) {
 // Kategorie löschen
 if (isset($_GET['delete_category'])) {
     $category_id = (int)$_GET['delete_category'];
-    $delete_query = "DELETE FROM categories WHERE id = ?";
-    $stmt = $pdo->prepare($delete_query);
+
+    // Überprüfen, ob aktive Produkte in dieser Kategorie vorhanden sind
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE category_id = ? AND deleted_at IS NULL");
     $stmt->execute([$category_id]);
+    $active_products_count = $stmt->fetchColumn();
+
+    if ($active_products_count > 0) {
+        // Warnung anzeigen, wenn aktive Produkte vorhanden sind
+        echo "<script>alert('Diese Kategorie kann nicht gelöscht werden, da aktive Produkte vorhanden sind.');</script>";
+    } else {
+        // Kategorie als gelöscht markieren
+        $delete_query = "UPDATE categories SET deleted_at = NOW() WHERE id = ?";
+        $stmt = $pdo->prepare($delete_query);
+        $stmt->execute([$category_id]);
+    }
+
     header('Location: manage_products.php');
     exit;
 }
