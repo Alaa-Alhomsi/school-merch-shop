@@ -69,7 +69,7 @@ $total_pages = ceil($total_products / $limit);
                         <select name="category" onchange="this.form.submit()" class="w-full sm:w-auto px-3 py-2 border rounded-md">
                             <option value="">Alle</option>
                             <?php
-                            $cat_query = "SELECT id, name FROM categories";
+                            $cat_query = "SELECT id, name FROM categories WHERE deleted_at IS NULL";
                             $cat_stmt = $pdo->query($cat_query);
                             while ($cat = $cat_stmt->fetch(PDO::FETCH_ASSOC)) {
                                 echo "<option value=\"{$cat['id']}\"" . ($category == $cat['id'] ? ' selected' : '') . ">{$cat['name']}</option>";
