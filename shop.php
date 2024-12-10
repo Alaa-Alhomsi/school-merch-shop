@@ -27,7 +27,7 @@ $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$total_query = "SELECT COUNT(*) FROM products p JOIN categories c ON p.category_id = c.id WHERE p.name LIKE :search";
+$total_query = "SELECT COUNT(*) FROM products p JOIN categories c ON p.category_id = c.id WHERE p.name LIKE :search AND p.deleted_at IS NULL";
 $total_stmt = $pdo->prepare($total_query);
 $total_stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
 $total_stmt->execute();
