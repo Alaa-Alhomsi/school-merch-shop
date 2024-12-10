@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("INSERT INTO users (email, password, class_name, is_teacher, email_verified, verification_code) VALUES (?, ?, ?, ?, 0, ?)");
             if ($stmt->execute([$email, $hashed_password, $class_name, $is_teacher, $verification_code])) {
                 // E-Mail-Bestätigung senden (PHPMailer empfohlen)
-                $verification_link = "https://alaa.digbizmistelbach.info/merch2/verify.php?email=$email&code=$verification_code";
+                $verification_link = "https://shop.digbizmistelbach.info/merch2/verify.php?email=$email&code=$verification_code";
                 $subject = "E-Mail-Bestätigung";
                 $message = "Klicken Sie auf diesen Link, um Ihre E-Mail zu bestätigen: $verification_link";
                 $headers = "From: noreply@merch.hakmistelbach.ac.at";
