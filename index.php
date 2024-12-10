@@ -2,8 +2,8 @@
 session_start();
 require_once 'db.php';
 
-// Hole die neuesten Produkte basierend auf created_at
-$stmt = $pdo->query("SELECT * FROM products ORDER BY created_at DESC LIMIT 4");
+// Hole die neuesten aktiven Produkte basierend auf created_at
+$stmt = $pdo->query("SELECT * FROM products WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT 4");
 $latestProducts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Hole einen zufälligen Slogan
@@ -130,6 +130,9 @@ $randomSlogan = $slogans[array_rand($slogans)];
                             </div>
                         </div>
                     <?php endforeach; ?>
+                </div>
+                <div class="text-center mt-8">
+                    <a href="shop.php" class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-indigo-700 transition duration-300">Weitere Produkte</a>
                 </div>
             </div>
         </section>
