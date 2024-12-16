@@ -345,15 +345,25 @@ function generateUserHTML(search) {
                     <td class="px-6 py-4">
                         <div class="space-y-2">
                             ${filteredOrders.map(order => `
-                                <div class="flex items-center gap-2">
-                                    <span>Bestellung #${order.order_id} (${new Date(order.date).toLocaleDateString()})</span>
-                                    <button 
-                                        type="button"
-                                        data-order-id="${order.order_id}"
-                                        class="px-3 py-1 rounded text-white text-sm status-button"
-                                        style="background-color: ${order.status_color}">
-                                        ${order.status_name}
-                                    </button>
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2">
+                                        <span>Bestellung #${order.order_id} (${new Date(order.date).toLocaleDateString()})</span>
+                                        <button 
+                                            type="button"
+                                            data-order-id="${order.order_id}"
+                                            class="px-3 py-1 rounded text-white text-sm status-button"
+                                            style="background-color: ${order.status_color}">
+                                            ${order.status_name}
+                                        </button>
+                                    </div>
+                                    <div class="ml-4">
+                                        <strong>Produkte:</strong>
+                                        <ul class="list-disc list-inside">
+                                            ${order.products.map(product => `
+                                                <li>${product.product_name} (Größe: ${product.size}, Menge: ${product.quantity})</li>
+                                            `).join('')}
+                                        </ul>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
@@ -604,3 +614,33 @@ function deleteProduct(productId) {
         });
     }
 }
+
+document.getElementById('search').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const resultsContainer = document.getElementById('results');
+
+    // Hier sollten Sie die Logik hinzufügen, um die Bestellungen zu filtern
+    axios.get('admin_panel_grouping.php', {
+        params: {
+            search: searchTerm // Senden Sie den Suchbegriff an den Server
+        }
+    })
+    .then(response => {
+        // Hier sollten Sie die Ergebnisse im resultsContainer aktualisieren
+        // Beispiel: resultsContainer.innerHTML = response.data;
+        resultsContainer.innerHTML = ''; // Leeren Sie den Container
+        response.data.forEach(order => {
+            const orderElement = document.createElement('div');
+            orderElement.innerHTML = `
+                <h3>${order.email}</h3>
+                <p>Bestell-ID: ${order.order_id}</p>
+                <p>Produkte:</p>
+                ${order.products.map(product => `<p>- ${product.product_name} (Größe: ${product.size}, Menge: ${product.quantity})</p>`).join('')}
+            `;
+            resultsContainer.appendChild(orderElement);
+        });
+    })
+    .catch(error => {
+        console.error('Fehler beim Abrufen der Bestellungen:', error);
+    });
+});
