@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Neuen Benutzer einfügen
             $verification_code = md5(uniqid("email_verification", true));  // E-Mail-Verifizierungs-Token
             $stmt = $pdo->prepare("INSERT INTO users (email, password, class_name, is_teacher, email_verified, verification_code) VALUES (?, ?, ?, ?, 0, ?)");
-            if ($stmt->execute([$email, $hashed_password, $class_name, $is_teacher, $verification_code])) {
+            if ($stmt->execute([$email, $hashed_password, $is_teacher ? null : $class_name, $is_teacher, $verification_code])) {
                 // E-Mail-Bestätigung senden (PHPMailer empfohlen)
                 $verification_link = "https://shop.digbizmistelbach.info/verify.php?email=$email&code=$verification_code";
                 $subject = "E-Mail-Bestätigung";
