@@ -64,7 +64,15 @@ foreach ($orders as $order) {
         'date' => $order['created_at'],
         'status_id' => $order['status_id'],
         'status_name' => $order['status_name'],
-        'status_color' => $order['status_color']
+        'status_color' => $order['status_color'],
+        'products' => []
+    ];
+
+    // Produkte zur Bestellung hinzufügen
+    $groupedByUser[$order['user_id']]['orders'][count($groupedByUser[$order['user_id']]['orders']) - 1]['products'][] = [
+        'product_name' => $order['product_name'],
+        'quantity' => $order['quantity'],
+        'size' => $order['size_name'] ?? 'N/A'
     ];
 
     // Nach Produkt gruppieren

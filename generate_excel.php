@@ -90,7 +90,8 @@ function generateClassReport($sheet, $data, $specificClass = null) {
 
     $row = 2;
     foreach ($data as $className => $classData) {
-        $displayClassName = $className === 'Lehrer' ? 'Lehrer' : $className;
+        $is_teacher = isset($classData['is_teacher']) && $classData['is_teacher'] == 1;
+        $displayClassName = $is_teacher ? 'Lehrer' : $className;
         if ($specificClass && $displayClassName !== $specificClass) {
             continue;
         }
