@@ -200,6 +200,13 @@ if (isset($_GET['edit_category'])) {
                             </option>
                         <?php endforeach; ?>
                     </select>
+                    
+                    <!-- Kontrollkästchen für Ausverkauft -->
+                    <div>
+                        <input type="checkbox" name="is_sold_out" id="is_sold_out" <?= ($edit_product && $edit_product['is_sold_out']) ? 'checked' : '' ?>>
+                        <label for="is_sold_out" class="ml-2">Ausverkauft</label>
+                    </div>
+
                     <input type="file" name="image" <?= $edit_product ? '' : 'required' ?> class="w-full">
                     <button type="submit" name="<?= $edit_product ? 'update_product' : 'add_product' ?>" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">
                         <?= $edit_product ? 'Produkt aktualisieren' : 'Produkt hinzufügen' ?>
