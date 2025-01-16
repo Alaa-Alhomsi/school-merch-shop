@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
     $description = trim($_POST['description']);
     $price = (float)$_POST['price'];
     $category_id = (int)$_POST['category_id'];
+    $is_sold_out = isset($_POST['is_sold_out']) ? 1 : 0;
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $image = $_FILES['image'];
@@ -30,9 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
         $target_path = 'images/' . $image_name;
 
         if (move_uploaded_file($image['tmp_name'], $target_path)) {
-            $insert_query = "INSERT INTO products (name, description, price, image, category_id) VALUES (?, ?, ?, ?, ?)";
+            $insert_query = "INSERT INTO products (name, description, price, image, category_id, is_sold_out) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $pdo->prepare($insert_query);
-            $stmt->execute([$name, $description, $price, $image_name, $category_id]);
+            $stmt->execute([$name, $description, $price, $image_name, $category_id, $is_sold_out]);
             header('Location: manage_products.php');
             exit;
         } else {
@@ -48,22 +49,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_product'])) {
     $description = trim($_POST['description']);
     $price = (float)$_POST['price'];
     $category_id = (int)$_POST['category_id'];
+    $is_sold_out = isset($_POST['is_sold_out']) ? 1 : 0;
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $image = $_FILES['image'];
         $image_name = uniqid() . '-' . basename($image['name']);
         $target_path = 'images/' . $image_name;
         if (move_uploaded_file($image['tmp_name'], $target_path)) {
-            $update_query = "UPDATE products SET name = ?, description = ?, price = ?, image = ?, category_id = ? WHERE id = ?";
+            $update_query = "UPDATE products SET name = ?, description = ?, price = ?, image = ?, category_id = ?, is_sold_out = ? WHERE id = ?";
             $stmt = $pdo->prepare($update_query);
-            $stmt->execute([$name, $description, $price, $image_name, $category_id, $product_id]);
+            $stmt->execute([$name, $description, $price, $image_name, $category_id, $is_sold_out, $product_id]);
         } else {
             echo "Fehler beim Hochladen des Bildes.";
         }
     } else {
-        $update_query = "UPDATE products SET name = ?, description = ?, price = ?, category_id = ? WHERE id = ?";
+        $update_query = "UPDATE products SET name = ?, description = ?, price = ?, category_id = ?, is_sold_out = ? WHERE id = ?";
         $stmt = $pdo->prepare($update_query);
-        $stmt->execute([$name, $description, $price, $category_id, $product_id]);
+        $stmt->execute([$name, $description, $price, $category_id, $is_sold_out, $product_id]);
     }
 
     header('Location: manage_products.php');

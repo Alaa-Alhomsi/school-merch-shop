@@ -24,6 +24,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
+            if ($product['is_sold_out']) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Dieses Produkt ist ausverkauft und kann nicht in den Warenkorb gelegt werden.'
+                ]);
+                exit;
+            }
+
             if (!isset($_SESSION['cart'])) {
                 $_SESSION['cart'] = [];
             }

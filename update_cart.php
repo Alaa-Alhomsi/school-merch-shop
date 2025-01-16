@@ -25,6 +25,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $cartCount = array_sum(array_column($_SESSION['cart'], 'quantity'));
 
+        // Überprüfen, ob das Produkt ausverkauft ist
+        $stmt = $pdo->prepare("SELECT is_sold_out FROM products WHERE id = ?");
+        $stmt->execute([$product_id]);
+        $product = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($product && $product['is_sold_out']) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Dieses Produkt ist ausverkauft und kann nicht aktualisiert werden.'
+            ]);
+            exit;
+        }
+
         echo json_encode([
             'success' => true,
             'message' => 'Warenkorb wurde aktualisiert',

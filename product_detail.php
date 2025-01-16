@@ -65,7 +65,16 @@ if ($product['allows_sizes']) {
                             </select>
                         </div>
                     <?php endif; ?>
-                    <button onclick="addToCart(<?= $product['id']; ?>, <?= $product['allows_sizes'] ? 'true' : 'false'; ?>)" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">In den Warenkorb</button>
+
+                    <?php if ($product['is_sold_out']): ?>
+                        <button class="w-full bg-red-500 text-white py-2 px-4 rounded-md" disabled>
+                            Ausverkauft
+                        </button>
+                    <?php else: ?>
+                        <button onclick="addToCart(<?= $product['id']; ?>, <?= $product['allows_sizes'] ? 'true' : 'false'; ?>)" class="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">
+                            In den Warenkorb
+                        </button>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -77,6 +86,6 @@ if ($product['allows_sizes']) {
 
     </main>
     <?php include 'footer.php'; ?>
-    <script type="module" src="js/script.js" ></script>
+    <script type="module" src="js/script.js"></script>
 </body>
 </html>

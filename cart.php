@@ -8,6 +8,7 @@ if (!isset($_SESSION['cart'])) {
 
 $cart = &$_SESSION['cart'];
 $total = 0;
+$has_sold_out_products = false;
 
 // Entfernen eines Produkts aus dem Warenkorb
 if (isset($_GET['remove'])) {
@@ -44,11 +45,20 @@ if (!empty($cart)) {
             $subtotal = $product['price'] * $quantity;
             $total += $subtotal;
             $cart[$cart_item_key] = array_merge($item, $product, ['subtotal' => $subtotal, 'size_name' => $size_name]);
+
+            if ($product['is_sold_out']) {
+                $has_sold_out_products = true;
+            }
         }
     }
 }
 
 $_SESSION['cart'] = $cart;
+
+if ($has_sold_out_products) {
+    echo "<p class='text-red-600'>Sie können keine Bestellung aufgeben, da einige Produkte ausverkauft sind.</p>";
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
