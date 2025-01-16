@@ -5,7 +5,7 @@ require_once 'db.php';
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'name';
 $category = isset($_GET['category']) ? $_GET['category'] : '';
-$limit = 8;
+$limit = 12;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $limit;
 
