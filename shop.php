@@ -95,6 +95,9 @@ $total_pages = ceil($total_products / $limit);
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span class="text-gray-800 font-bold">€<?= number_format($product['price'], 2); ?></span>
+                                    <?php if ($product['is_sold_out']): ?>
+                                        <span class="text-red-500 font-bold">Ausverkauft</span>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </a>
