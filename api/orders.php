@@ -8,94 +8,115 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
 
 require_once '../db.php';
 
-// Pagination-Parameter
+// Parameter holen
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $limit = isset($_GET['limit']) ? max(1, (int)$_GET['limit']) : 10;
 $offset = ($page - 1) * $limit;
+$groupBy = $_GET['groupBy'] ?? 'none';  // none, user, product, class
+$statusFilter = isset($_GET['status']) ? $_GET['status'] : null;
+$classFilter = isset($_GET['class']) ? $_GET['class'] : null;
 
-// Gruppierungsparameter
-$groupBy = $_GET['groupBy'] ?? null;
-
-// Gesamtanzahl der Bestellungen ermitteln
-$totalQuery = "SELECT COUNT(DISTINCT o.id) AS total FROM orders o";
-$totalStmt = $pdo->query($totalQuery);
-$totalOrders = $totalStmt->fetch(PDO::FETCH_ASSOC)['total'];
-$totalPages = ceil($totalOrders / $limit);
-
-// Grundlegende Query
-$query = "SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price, o.status_id,
+// Grund-Query mit Filtern
+$query = "SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price, 
                  u.email, u.class_name, 
+                 os.name AS status_name, os.color AS status_color,
                  oi.product_id, oi.quantity, oi.size_name,
-                 p.name AS product_name, p.price AS product_price,
-                 os.name AS status_name, os.color AS status_color
+                 p.name AS product_name, p.price AS product_price
           FROM orders o
           JOIN order_items oi ON o.id = oi.order_id
           JOIN users u ON o.user_id = u.id
           JOIN products p ON oi.product_id = p.id AND p.deleted_at IS NULL
-          JOIN order_status os ON o.status_id = os.id";
+          JOIN order_status os ON o.status_id = os.id
+          WHERE 1=1";
 
-// Standard-Sortierung nach Bestellnummer, falls keine Gruppierung gewählt wurde
-$orderClause = "ORDER BY o.id DESC";
-
-// Gruppierung anpassen
-switch ($groupBy) {
-    case 'user':
-        $query .= " ORDER BY u.email";
-        break;
-    case 'product':
-        $query .= " ORDER BY p.name";
-        break;
-    case 'class':
-        $query .= " ORDER BY u.class_name";
-        break;
-    default:
-        $query .= " " . $orderClause;
+// Status-Filter
+if ($statusFilter) {
+    $query .= " AND os.name = :status";
 }
 
-// Limit und Offset hinzufügen
+// Klassen-Filter
+if ($classFilter) {
+    $query .= " AND u.class_name = :class";
+}
+
+// Sortierung nach Bestellnummer, falls keine Gruppierung
+if ($groupBy === 'none') {
+    $query .= " ORDER BY o.id DESC";
+}
+
+// Paginierung
 $query .= " LIMIT :limit OFFSET :offset";
 
-// Statement vorbereiten und ausführen
 $stmt = $pdo->prepare($query);
+if ($statusFilter) $stmt->bindValue(':status', $statusFilter, PDO::PARAM_STR);
+if ($classFilter) $stmt->bindValue(':class', $classFilter, PDO::PARAM_STR);
 $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Gruppierte Daten initialisieren
+// Umstrukturieren der Daten
 $result = [];
+foreach ($orders as $order) {
+    $orderId = $order['order_id'];
+    
+    // Falls Bestellung noch nicht existiert, hinzufügen
+    if (!isset($result[$orderId])) {
+        $result[$orderId] = [
+            'order_id' => $orderId,
+            'user_id' => $order['user_id'],
+            'created_at' => $order['created_at'],
+            'total_price' => $order['total_price'],
+            'email' => $order['email'],
+            'class_name' => $order['class_name'],
+            'status_name' => $order['status_name'],
+            'status_color' => $order['status_color'],
+            'products' => []
+        ];
+    }
 
-switch ($groupBy) {
-    case 'user':
-        foreach ($orders as $order) {
-            $result[$order['user_id']]['email'] = $order['email'];
-            $result[$order['user_id']]['class_name'] = $order['class_name'];
-            $result[$order['user_id']]['total_spent'] = ($result[$order['user_id']]['total_spent'] ?? 0) + ($order['product_price'] * $order['quantity']);
-            $result[$order['user_id']]['orders'][] = $order;
+    // Produkt zu Bestellung hinzufügen
+    $result[$orderId]['products'][] = [
+        'product_id' => $order['product_id'],
+        'name' => $order['product_name'],
+        'size' => $order['size_name'] ?? 'N/A',
+        'quantity' => $order['quantity'],
+        'price' => $order['product_price']
+    ];
+}
+
+// Falls Gruppierung benötigt wird, neu organisieren
+$finalResult = [];
+if ($groupBy === 'user') {
+    foreach ($result as $order) {
+        $userId = $order['user_id'];
+        if (!isset($finalResult[$userId])) {
+            $finalResult[$userId] = [
+                'email' => $order['email'],
+                'class_name' => $order['class_name'],
+                'total_spent' => 0,
+                'orders' => []
+            ];
         }
-        break;
-
-    case 'product':
-        foreach ($orders as $order) {
-            $productKey = $order['product_id'] . '_' . ($order['size_name'] ?? 'no_size');
-            $result[$productKey]['name'] = $order['product_name'];
-            $result[$productKey]['size'] = $order['size_name'] ?? 'N/A';
-            $result[$productKey]['total_quantity'] = ($result[$productKey]['total_quantity'] ?? 0) + $order['quantity'];
+        $finalResult[$userId]['total_spent'] += $order['total_price'];
+        $finalResult[$userId]['orders'][] = $order;
+    }
+} elseif ($groupBy === 'class') {
+    foreach ($result as $order) {
+        $className = $order['class_name'] === 'teacher' ? 'Lehrer' : $order['class_name'];
+        if (!isset($finalResult[$className])) {
+            $finalResult[$className] = [
+                'total_spent' => 0,
+                'users' => []
+            ];
         }
-        break;
-
-    case 'class':
-        foreach ($orders as $order) {
-            $className = $order['class_name'] === 'teacher' ? 'Lehrer' : $order['class_name'];
-            $result[$className]['total_spent'] = ($result[$className]['total_spent'] ?? 0) + ($order['product_price'] * $order['quantity']);
-            $result[$className]['users'][$order['user_id']]['email'] = $order['email'];
-            $result[$className]['users'][$order['user_id']]['total_spent'] = ($result[$className]['users'][$order['user_id']]['total_spent'] ?? 0) + ($order['product_price'] * $order['quantity']);
-        }
-        break;
-
-    default:
-        $result = $orders;
-        break;
+        $finalResult[$className]['total_spent'] += $order['total_price'];
+        $finalResult[$className]['users'][$order['user_id']]['email'] = $order['email'];
+        $finalResult[$className]['users'][$order['user_id']]['total_spent'] =
+            ($finalResult[$className]['users'][$order['user_id']]['total_spent'] ?? 0) + $order['total_price'];
+    }
+} else {
+    $finalResult = array_values($result);
 }
 
 // JSON zurückgeben
@@ -103,9 +124,10 @@ header('Content-Type: application/json');
 echo json_encode([
     'pagination' => [
         'current_page' => $page,
-        'total_pages' => $totalPages,
-        'total_orders' => $totalOrders,
+        'total_pages' => ceil(count($orders) / $limit),
+        'total_orders' => count($orders),
         'limit' => $limit
     ],
-    'data' => $result
+    'data' => $finalResult
 ]);
+?>
