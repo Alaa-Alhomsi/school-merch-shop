@@ -58,8 +58,34 @@ function getOrder($pdo, $id) {
                            JOIN order_status os ON o.status_id = os.id
                            WHERE o.id = ?");
     $stmt->execute([$id]);
-    $order = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    if ($order) {
+    $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if ($orderItems) {
+        // Struktur für die Bestellung erstellen
+        $order = [
+            'order_id' => $orderItems[0]['order_id'],
+            'user_id' => $orderItems[0]['user_id'],
+            'created_at' => $orderItems[0]['created_at'],
+            'total_price' => $orderItems[0]['total_price'],
+            'status_id' => $orderItems[0]['status_id'],
+            'email' => $orderItems[0]['email'],
+            'class_name' => $orderItems[0]['class_name'],
+            'status_name' => $orderItems[0]['status_name'],
+            'status_color' => $orderItems[0]['status_color'],
+            'products' => []
+        ];
+
+        // Produkte zur Bestellung hinzufügen
+        foreach ($orderItems as $item) {
+            $order['products'][] = [
+                'product_id' => $item['product_id'],
+                'name' => $item['product_name'],
+                'size' => $item['size_name'] ?? 'N/A',
+                'quantity' => $item['quantity'],
+                'price' => $item['product_price']
+            ];
+        }
+
         echo json_encode($order);
     } else {
         http_response_code(404);
