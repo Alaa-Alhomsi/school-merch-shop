@@ -121,13 +121,5 @@ if ($groupBy === 'user') {
 
 // JSON zurückgeben
 header('Content-Type: application/json');
-echo json_encode([
-    'pagination' => [
-        'current_page' => $page,
-        'total_pages' => ceil(count($orders) / $limit),
-        'total_orders' => count($orders),
-        'limit' => $limit
-    ],
-    'data' => $finalResult
-]);
+echo json_encode(array_values($finalResult)); // Gebe nur die Daten als Array zurück
 ?>
