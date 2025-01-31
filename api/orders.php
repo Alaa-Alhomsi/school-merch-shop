@@ -6,7 +6,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
     exit;
 }
 
-require_once 'db.php';
+require_once '../db.php';
 
 // Pagination-Parameter holen
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
