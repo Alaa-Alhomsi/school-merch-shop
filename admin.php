@@ -88,7 +88,7 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
     
     <?php include 'footer.php'; ?>
     
-    <script src="js/script.js"></script>
+    <script src="js/admin.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             initializeAdmin();
