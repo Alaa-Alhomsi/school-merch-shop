@@ -1,87 +1,88 @@
 <?php
 session_start();
-if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
+header('Content-Type: application/json');
+require_once '/../db.php';
+
+if (!isset($_SESSION['loggedin'])) {
     http_response_code(401);
     echo json_encode(['error' => 'Unauthorized']);
     exit;
 }
 
-require_once '../db.php';
-
-// Pagination-Parameter holen
-$page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-$limit = isset($_GET['limit']) ? max(1, (int)$_GET['limit']) : 10;
-$offset = ($page - 1) * $limit;
-
-// Gesamtanzahl der Bestellungen ermitteln
-$totalQuery = "SELECT COUNT(DISTINCT o.id) AS total FROM orders o";
-$totalStmt = $pdo->query($totalQuery);
-$totalOrders = $totalStmt->fetch(PDO::FETCH_ASSOC)['total'];
-$totalPages = ceil($totalOrders / $limit);
-
-// Bestellungen mit Details abrufen (paginiert)
-$query = "SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price, o.status_id,
-                 u.email, u.class_name, 
-                 oi.product_id, oi.quantity, oi.size_name,
-                 p.name AS product_name, p.price AS product_price,
-                 os.name AS status_name, os.color AS status_color
-          FROM orders o
-          JOIN order_items oi ON o.id = oi.order_id
-          JOIN users u ON o.user_id = u.id
-          JOIN products p ON oi.product_id = p.id AND p.deleted_at IS NULL
-          JOIN order_status os ON o.status_id = os.id
-          ORDER BY o.created_at DESC
-          LIMIT :limit OFFSET :offset";
-$stmt = $pdo->prepare($query);
-$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-$stmt->execute();
-$orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Gruppierungs-Arrays initialisieren
-$groupedByUser = [];
-$groupedByProduct = [];
-$groupedByClass = [];
-
-foreach ($orders as $order) {
-    $productKey = $order['product_id'] . '_' . ($order['size_name'] ?? 'no_size');
-    $className = $order['class_name'] === 'teacher' ? 'Lehrer' : $order['class_name'];
-
-    // Nach Benutzer gruppieren
-    $groupedByUser[$order['user_id']]['email'] = $order['email'];
-    $groupedByUser[$order['user_id']]['class_name'] = $className;
-    $groupedByUser[$order['user_id']]['total_spent'] = ($groupedByUser[$order['user_id']]['total_spent'] ?? 0) + ($order['product_price'] * $order['quantity']);
-    $groupedByUser[$order['user_id']]['products'][$productKey]['name'] = $order['product_name'];
-    $groupedByUser[$order['user_id']]['products'][$productKey]['size'] = $order['size_name'] ?? 'N/A';
-    $groupedByUser[$order['user_id']]['products'][$productKey]['quantity'] = ($groupedByUser[$order['user_id']]['products'][$productKey]['quantity'] ?? 0) + $order['quantity'];
-    $groupedByUser[$order['user_id']]['orders'][$order['order_id']]['date'] = $order['created_at'];
-    $groupedByUser[$order['user_id']]['orders'][$order['order_id']]['status_name'] = $order['status_name'];
-    $groupedByUser[$order['user_id']]['orders'][$order['order_id']]['status_color'] = $order['status_color'];
-
-    // Nach Produkt gruppieren
-    $groupedByProduct[$productKey]['name'] = $order['product_name'];
-    $groupedByProduct[$productKey]['size'] = $order['size_name'] ?? 'N/A';
-    $groupedByProduct[$productKey]['total_quantity'] = ($groupedByProduct[$productKey]['total_quantity'] ?? 0) + $order['quantity'];
-
-    // Nach Klasse gruppieren
-    $groupedByClass[$className]['total_spent'] = ($groupedByClass[$className]['total_spent'] ?? 0) + ($order['product_price'] * $order['quantity']);
-    $groupedByClass[$className]['users'][$order['user_id']]['email'] = $order['email'];
-    $groupedByClass[$className]['users'][$order['user_id']]['total_spent'] = ($groupedByClass[$className]['users'][$order['user_id']]['total_spent'] ?? 0) + ($order['product_price'] * $order['quantity']);
-    $groupedByClass[$className]['products'][$productKey]['name'] = $order['product_name'];
-    $groupedByClass[$className]['products'][$productKey]['size'] = $order['size_name'] ?? 'N/A';
-    $groupedByClass[$className]['products'][$productKey]['quantity'] = ($groupedByClass[$className]['products'][$productKey]['quantity'] ?? 0) + $order['quantity'];
+if($_SESSION['admin'] != true){
+    http_response_code(403);
+    echo json_encode(['error' => 'Forbidden']);
+    exit;
 }
 
-// JSON zurückgeben
-header('Content-Type: application/json');
-echo json_encode([
-    'pagination' => [
-        'current_page' => $page,
-        'total_pages' => $totalPages,
-        'total_orders' => $totalOrders,
-        'limit' => $limit
-    ],
-    'groupedByUser' => $groupedByUser,
-    'groupedByProduct' => $groupedByProduct,
-    'groupedByClass' => $groupedByClass
-]);
+$method = $_SERVER['REQUEST_METHOD'];
+
+switch ($method) {
+    case 'GET':
+        if (isset($_GET['id'])) {
+            getOrder($pdo, $_GET['id']);
+        } else {
+            echo json_encode(['error' => 'Order ID is required']);
+        }
+        break;
+    case 'DELETE':
+        if (isset($_GET['id'])) {
+            deleteOrder($pdo, $_GET['id']);
+        } else {
+            echo json_encode(['error' => 'Order ID is required']);
+        }
+        break;
+    case 'PATCH':
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (isset($_GET['id']) && isset($data['status_id'])) {
+            updateOrderStatus($pdo, $_GET['id'], $data['status_id']);
+        } else {
+            echo json_encode(['error' => 'Order ID and status_id are required']);
+        }
+        break;
+    default:
+        http_response_code(405);
+        echo json_encode(['error' => 'Method Not Allowed']);
+}
+
+function getOrder($pdo, $id) {
+    $stmt = $pdo->prepare("SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price, o.status_id,
+                                  u.email, u.class_name,
+                                  oi.product_id, oi.quantity, oi.size_name,
+                                  p.name AS product_name, p.price AS product_price,
+                                  os.name AS status_name, os.color AS status_color
+                           FROM orders o
+                           JOIN order_items oi ON o.id = oi.order_id
+                           JOIN users u ON o.user_id = u.id
+                           JOIN products p ON oi.product_id = p.id AND p.deleted_at IS NULL
+                           JOIN order_status os ON o.status_id = os.id
+                           WHERE o.id = ?");
+    $stmt->execute([$id]);
+    $order = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($order) {
+        echo json_encode($order);
+    } else {
+        http_response_code(404);
+        echo json_encode(['error' => 'Order not found']);
+    }
+}
+
+function deleteOrder($pdo, $id) {
+    $stmt = $pdo->prepare("DELETE FROM orders WHERE id = ?");
+    if ($stmt->execute([$id])) {
+        echo json_encode(['message' => 'Order deleted successfully']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to delete order']);
+    }
+}
+
+function updateOrderStatus($pdo, $id, $status_id) {
+    $stmt = $pdo->prepare("UPDATE orders SET status_id = ? WHERE id = ?");
+    if ($stmt->execute([$status_id, $id])) {
+        echo json_encode(['message' => 'Order status updated']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to update order status']);
+    }
+}
