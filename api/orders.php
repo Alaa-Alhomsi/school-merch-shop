@@ -23,27 +23,36 @@ require_once '../db.php';
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $limit = isset($_GET['limit']) ? max(1, (int)$_GET['limit']) : 10;
 $offset = ($page - 1) * $limit;
-$groupBy = $_GET['groupBy'] ?? 'none';  // none, user, product, class
+$groupBy = $_GET['groupBy'] ?? 'none';  // none, user, class
 $statusFilter = isset($_GET['status']) ? $_GET['status'] : null;
 $classFilter = isset($_GET['class']) ? $_GET['class'] : null;
 
-// Grund-Query mit Filtern
+// IDs der letzten Bestellungen holen
+$orderIdsQuery = "SELECT id FROM orders ORDER BY id DESC LIMIT :limit OFFSET :offset";
+$stmt = $pdo->prepare($orderIdsQuery);
+$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
+$orderIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Falls keine Bestellungen gefunden wurden, leeres Array zurückgeben
+if (empty($orderIds)) {
+    echo json_encode([]);
+    exit;
+}
+
+// Details zu den Bestellungen abrufen
 $query = "SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price, 
                  u.email, u.class_name, 
                  os.name AS status_name, os.color AS status_color,
                  oi.product_id, oi.quantity, oi.size_name,
                  p.name AS product_name, p.price AS product_price
-          FROM (
-              SELECT id FROM orders 
-              ORDER BY id DESC 
-              LIMIT :limit OFFSET :offset
-          ) sub
-          JOIN orders o ON sub.id = o.id
+          FROM orders o
           JOIN order_items oi ON o.id = oi.order_id
           JOIN users u ON o.user_id = u.id
           JOIN products p ON oi.product_id = p.id AND p.deleted_at IS NULL
-          JOIN order_status os ON o.status_id = os.id";
-
+          JOIN order_status os ON o.status_id = os.id
+          WHERE o.id IN (" . implode(',', array_map('intval', $orderIds)) . ")";
 
 // Status-Filter
 if ($statusFilter) {
@@ -55,19 +64,12 @@ if ($classFilter) {
     $query .= " AND u.class_name = :class";
 }
 
-// Sortierung nach Bestellnummer, falls keine Gruppierung
-if ($groupBy === 'none') {
-    $query .= " ORDER BY o.id DESC";
-}
-
-// Paginierung
-$query .= " LIMIT :limit OFFSET :offset";
+// Sortierung nach Bestellnummer
+$query .= " ORDER BY o.id DESC";
 
 $stmt = $pdo->prepare($query);
 if ($statusFilter) $stmt->bindValue(':status', $statusFilter, PDO::PARAM_STR);
 if ($classFilter) $stmt->bindValue(':class', $classFilter, PDO::PARAM_STR);
-$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -91,7 +93,7 @@ foreach ($orders as $order) {
         ];
     }
 
-    // Produkt zu Bestellung hinzufügen
+    // Produkt zur Bestellung hinzufügen
     $result[$orderId]['products'][] = [
         'product_id' => $order['product_id'],
         'name' => $order['product_name'],
@@ -137,5 +139,5 @@ if ($groupBy === 'user') {
 
 // JSON zurückgeben
 header('Content-Type: application/json');
-echo json_encode(array_values($finalResult)); // Gebe nur die Daten als Array zurück
+echo json_encode(array_values($finalResult));
 ?>
