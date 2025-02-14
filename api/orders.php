@@ -33,12 +33,17 @@ $query = "SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price,
                  os.name AS status_name, os.color AS status_color,
                  oi.product_id, oi.quantity, oi.size_name,
                  p.name AS product_name, p.price AS product_price
-          FROM orders o
+          FROM (
+              SELECT id FROM orders 
+              ORDER BY id DESC 
+              LIMIT :limit OFFSET :offset
+          ) sub
+          JOIN orders o ON sub.id = o.id
           JOIN order_items oi ON o.id = oi.order_id
           JOIN users u ON o.user_id = u.id
           JOIN products p ON oi.product_id = p.id AND p.deleted_at IS NULL
-          JOIN order_status os ON o.status_id = os.id
-          WHERE 1=1";
+          JOIN order_status os ON o.status_id = os.id";
+
 
 // Status-Filter
 if ($statusFilter) {
