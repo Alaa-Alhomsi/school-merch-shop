@@ -15,7 +15,7 @@ $query = "SELECT p.*, c.name as category_name
 $products = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
 // Kategorien abrufen
-$categories = $pdo->query("SELECT * FROM categories")->fetchAll(PDO::FETCH_ASSOC);
+$categories = $pdo->query("SELECT * FROM categories WHERE deleted_at = NULL")->fetchAll(PDO::FETCH_ASSOC);
 
 // Produkt hinzufügen
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_product'])) {
