@@ -50,7 +50,7 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <div class="flex justify-center">
-            <button id="loadMore" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" hx-get="admin_panel_orders.php" hx-target="#results" hx-trigger="click" hx-params="{'offset': document.querySelectorAll('#results .order-row').length}">
+            <button id="loadMore" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" hx-get="admin_panel_orders.php" hx-target="#results" hx-trigger="click" hx-params="{'offset': document.querySelectorAll('#results .order-row').length, 'search': document.getElementById('search').value, 'status': document.getElementById('statusFilter').value}">
                 Mehr laden
             </button>
         </div>
