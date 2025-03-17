@@ -1,55 +1,66 @@
 <?php
-session_start();
-if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
-    exit;
-}
-
 require_once 'db.php';
 
-// Parameter für Pagination
-$limit = 10; // Anzahl der Bestellungen pro Anfrage
-$offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
-$search = isset($_GET['search']) ? $_GET['search'] : '';
-$statusFilter = isset($_GET['status']) ? $_GET['status'] : '';
+$limit = 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+$statusFilter = isset($_GET['status']) ? (int)$_GET['status'] : null;
 
-// SQL-Abfrage anpassen
-$query = "SELECT o.id AS order_id, o.user_id, o.created_at, o.total_price, 
-                 u.email, os.name AS status_name, os.color AS status_color
+$query = "SELECT o.*, u.firstname, u.lastname, p.name AS product_name, os.name AS status_name 
           FROM orders o
           JOIN users u ON o.user_id = u.id
-          JOIN order_status os ON o.status_id = os.id
-          WHERE (u.email LIKE :search OR o.id LIKE :search)";
+          JOIN products p ON o.product_id = p.id
+          JOIN order_status os ON o.status_id = os.id";
 
-if ($statusFilter) {
-    $query .= " AND o.status_id = :status";
+$params = [];
+if ($statusFilter !== null) {
+    $query .= " WHERE o.status_id = ?";
+    $params[] = $statusFilter;
 }
 
-$query .= " ORDER BY o.created_at DESC LIMIT :limit OFFSET :offset";
+$query .= " ORDER BY o.created_at DESC LIMIT ? OFFSET ?";
+$params[] = $limit;
+$params[] = $offset;
 
 $stmt = $pdo->prepare($query);
-$stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
-if ($statusFilter) {
-    $stmt->bindValue(':status', $statusFilter, PDO::PARAM_INT);
-}
-$stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-$stmt->execute();
+$stmt->execute($params);
 $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// HTML für die Bestellungen generieren
-$html = '<table class="min-w-full divide-y divide-gray-200"><thead><tr><th>Email</th><th>Bestell-ID</th><th>Gesamt</th><th>Status</th></tr></thead><tbody>';
-foreach ($orders as $order) {
-    $html .= '<tr class="order-row">';
-    $html .= '<td>' . htmlspecialchars($order['email']) . '</td>';
-    $html .= '<td>' . htmlspecialchars($order['order_id']) . '</td>';
-    $html .= '<td>€' . number_format($order['total_price'], 2) . '</td>';
-    $html .= '<td><button class="status-button" data-order-id="' . $order['order_id'] . '" style="background-color: ' . $order['status_color'] . '">' . htmlspecialchars($order['status_name']) . '</button></td>';
-    $html .= '</tr>';
-}
-$html .= '</tbody></table>';
+$queryCount = "SELECT COUNT(*) FROM orders" . ($statusFilter !== null ? " WHERE status_id = ?" : "");
+$stmtCount = $pdo->prepare($queryCount);
+$stmtCount->execute($statusFilter !== null ? [$statusFilter] : []);
+$totalOrders = $stmtCount->fetchColumn();
+$totalPages = ceil($totalOrders / $limit);
+?>
 
-// JSON zurückgeben
-header('Content-Type: text/html');
-echo $html; 
+<table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+        <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kunde</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produkt</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Datum</th>
+        </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+        <?php foreach ($orders as $order): ?>
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap"> <?= htmlspecialchars($order['firstname'] . ' ' . $order['lastname']) ?> </td>
+                <td class="px-6 py-4 whitespace-nowrap"> <?= htmlspecialchars($order['product_name']) ?> </td>
+                <td class="px-6 py-4 whitespace-nowrap"> <?= htmlspecialchars($order['status_name']) ?> </td>
+                <td class="px-6 py-4 whitespace-nowrap"> <?= htmlspecialchars($order['created_at']) ?> </td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+<?php if ($totalPages > 1): ?>
+    <div class="mt-4 flex justify-center">
+        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+            <button hx-get="admin_orders.php?page=<?= $i ?>" hx-target="#results" 
+                    class="px-4 py-2 mx-1 border rounded <?= $i == $page ? 'bg-blue-500 text-white' : 'bg-white' ?>">
+                <?= $i ?>
+            </button>
+        <?php endfor; ?>
+    </div>
+<?php endif; ?>
