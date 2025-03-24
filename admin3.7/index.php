@@ -1,11 +1,11 @@
 <?php
 session_start();
 if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
-    header('Location: shop.php');
+    header('Location: ../shop.php');
     exit;
 }
 
-require_once 'db.php';
+require_once '../db.php';
 
 // Status aus der Datenbank abrufen
 $statusQuery = "SELECT * FROM order_status ORDER BY id";
@@ -27,7 +27,7 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
 </head>
 <body class="flex flex-col min-h-screen bg-gray-100">
-    <?php include 'navbar.php'; ?>
+    <?php include '../navbar.php'; ?>
     
     <main class="flex-grow container mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-6">Bestellungen verwalten</h1>

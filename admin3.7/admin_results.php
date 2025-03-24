@@ -5,7 +5,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
     exit;
 }
 
-require_once 'db.php';
+require_once '../db.php';
 
 // Parameter abrufen
 $grouping = isset($_GET['grouping']) ? $_GET['grouping'] : 'user';
@@ -20,7 +20,7 @@ function getGroupedData($pdo, $grouping, $search, $statusFilter) {
     // Benutzer-Gruppierung
     if ($grouping === 'user') {
         $params = [];
-        $sql = "SELECT o.id as order_id, o.date, u.id as user_id, u.email, c.name as class_name, 
+        $sql = "SELECT o.id as order_id, o.created_at, u.id as user_id, u.email, c.name as class_name, 
                       os.id as status_id, os.name as status_name, os.color as status_color,
                       SUM(oi.price * oi.quantity) as total_spent
                FROM orders o
@@ -41,7 +41,7 @@ function getGroupedData($pdo, $grouping, $search, $statusFilter) {
         }
         
         $sql .= " GROUP BY o.id
-                 ORDER BY u.email, o.date DESC";
+                 ORDER BY u.email, o.created_at DESC";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);

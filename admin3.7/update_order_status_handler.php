@@ -5,7 +5,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
     exit;
 }
 
-require_once 'db.php';
+require_once '../db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Parameter validieren
