@@ -30,9 +30,9 @@
         <div class="max-w-lg mx-auto my-8">
             <svg viewBox="0 0 200 200" class="w-64 h-64 mx-auto">
                 <circle cx="100" cy="100" r="90" class="fill-white opacity-10"/>
-                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="text-2xl fill-white">
+                <!--text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="text-2xl fill-white">
                     Oh oh!
-                </text>
+                </text-->
                 <g transform="translate(70,80)">
                     <circle cx="20" cy="20" r="15" class="fill-white"/>
                     <circle cx="40" cy="20" r="15" class="fill-white"/>
