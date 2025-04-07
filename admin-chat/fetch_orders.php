@@ -1,5 +1,5 @@
 <?php
-include 'db.php';
+include '../db.php';
 
 $groupBy = $_GET['group_by'] ?? 'user';
 $search = $_GET['search'] ?? '';
