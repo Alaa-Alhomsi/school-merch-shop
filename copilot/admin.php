@@ -1,11 +1,11 @@
 <?php
 session_start();
-if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
+/*if (!isset($_SESSION['loggedin']) || $_SESSION['admin'] != true) {
     header('Location: shop.php');
     exit;
-}
+}*/
 
-require_once 'db.php';
+require_once '../db.php';
 
 // Status aus der Datenbank abrufen
 $statusQuery = "SELECT * FROM order_status ORDER BY id";
@@ -19,9 +19,9 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Bestellungen</title>
-    <link href="/css/output.css" rel="stylesheet">
+    <link href="./css/output.css" rel="stylesheet">
     <link rel="stylesheet" href="css/footerConf.css">
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.3"></script>
 </head>
 <body class="flex flex-col min-h-screen bg-gray-100">
     <?php include 'navbar.php'; ?>
@@ -32,7 +32,7 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="flex flex-wrap gap-4 mb-6">
             <div class="w-full md:w-auto">
                 <label for="grouping" class="block text-sm font-medium text-gray-700 mb-2">Gruppierung:</label>
-                <select id="grouping" class="w-full md:w-64 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                <select id="grouping" class="w-full md:w-64 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" hx-get="admin_panel_grouping.php" hx-target="#results" hx-trigger="change">
                     <option value="user" selected>Nach Benutzer</option>
                     <option value="product">Nach Produkt</option>
                     <option value="class">Nach Klasse</option>
@@ -41,7 +41,7 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
 
             <div class="w-full md:w-auto">
                 <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-2">Status Filter:</label>
-                <select id="statusFilter" class="w-full md:w-64 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                <select id="statusFilter" class="w-full md:w-64 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" hx-get="admin_panel_grouping.php" hx-target="#results" hx-trigger="change">
                     <option value="">Alle Status</option>
                     <?php foreach ($orderStatuses as $status): ?>
                         <option value="<?= $status['id'] ?>" <?= $status['name'] === 'Neu' ? 'selected' : '' ?>>
@@ -53,11 +53,11 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
 
             <div class="w-full md:w-auto">
                 <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Suche:</label>
-                <input type="text" id="search" class="w-full md:w-64 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" placeholder="Suchen...">
+                <input type="text" id="search" class="w-full md:w-64 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" placeholder="Suchen..." hx-get="admin_panel_grouping.php" hx-target="#results" hx-trigger="keyup changed delay:500ms">
             </div>
 
             <div class="w-full md:w-auto flex items-end">
-                <button id="downloadExcel" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                <button id="downloadExcel" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50" hx-get="generate_excel.php" hx-target="body" hx-trigger="click">
                     Excel-Bericht
                 </button>
             </div>
@@ -79,22 +79,17 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php endforeach; ?>
                 </select>
                 <div class="flex justify-end space-x-2">
-                    <button id="cancelStatusChange" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Abbrechen</button>
-                    <button id="confirmStatusChange" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Speichern</button>
+                    <button id="cancelStatusChange" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300" hx-on="click: this.closest('#statusModal').classList.add('hidden')">
+                        Abbrechen
+                    </button>
+                    <button id="confirmStatusChange" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" hx-post="update_order_status.php" hx-target="#results" hx-vals="{'orderId': currentOrderId, 'statusId': newStatus.value}">
+                        Speichern
+                    </button>
                 </div>
             </div>
         </div>
     </main>
     
     <?php include 'footer.php'; ?>
-    
-    <script src="js/script.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (document.getElementById('grouping')) {
-                initializeAdmin();
-            }
-        });
-    </script>
 </body>
 </html>

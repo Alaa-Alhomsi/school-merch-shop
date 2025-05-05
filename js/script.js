@@ -644,3 +644,12 @@ document.getElementById('search').addEventListener('input', function() {
         console.error('Fehler beim Abrufen der Bestellungen:', error);
     });
 });
+
+window.initializeAdmin = initializeAdmin;
+window.fetchAdminData = fetchAdminData;
+window.updateResults = updateResults;
+window.downloadExcel = downloadExcel;
+window.groupedData = groupedData;
+window.generateUserHTML = generateUserHTML;
+window.generateProductHTML = generateProductHTML;
+window.generateClassHTML = generateClassHTML;

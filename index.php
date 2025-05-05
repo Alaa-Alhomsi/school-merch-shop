@@ -1,5 +1,5 @@
 <?php
-session_start();
+//session_start();
 require_once 'db.php';
 
 // Hole die neuesten aktiven Produkte basierend auf created_at
@@ -23,7 +23,7 @@ $randomSlogan = $slogans[array_rand($slogans)];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schul-Merchandise Shop - Interaktive Erfahrung</title>
-    <link href="/css/output.css" rel="stylesheet">
+    <link href="./css/output.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
     <style>
