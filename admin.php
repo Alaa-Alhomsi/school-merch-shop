@@ -32,10 +32,11 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="flex flex-wrap gap-4 mb-6">
             <div class="w-full md:w-auto">
                 <label for="grouping" class="block text-sm font-medium text-gray-700 mb-2">Gruppierung:</label>
-                <select id="grouping" class="w-full md:w-64 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                    <option value="user" selected>Nach Benutzer</option>
+                <select id="grouping" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="user">Nach Benutzer</option>
                     <option value="product">Nach Produkt</option>
                     <option value="class">Nach Klasse</option>
+                    <option value="order">Nach Bestellung</option>
                 </select>
             </div>
 
@@ -88,7 +89,7 @@ $orderStatuses = $statusStmt->fetchAll(PDO::FETCH_ASSOC);
     
     <?php include 'footer.php'; ?>
     
-    <script src="js/script.js"></script>
+    <script src="js/admin.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (document.getElementById('grouping')) {
